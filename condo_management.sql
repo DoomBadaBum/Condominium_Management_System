@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 19, 2023 at 07:41 AM
+-- Generation Time: Dec 26, 2023 at 04:54 PM
 -- Server version: 5.7.33
 -- PHP Version: 7.4.19
 
@@ -59,10 +59,12 @@ INSERT INTO `admin` (`admin_id`, `user_id`) VALUES
 
 CREATE TABLE `announcement` (
   `announcement_id` int(20) NOT NULL,
-  `admin_id` int(20) NOT NULL,
   `title` varchar(20) NOT NULL,
   `content` text NOT NULL,
-  `date` date NOT NULL
+  `date` date NOT NULL,
+  `worker_id` int(11) DEFAULT NULL,
+  `media_url` varchar(255) DEFAULT NULL,
+  `time` time DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 -- --------------------------------------------------------
@@ -351,8 +353,7 @@ ALTER TABLE `admin`
 -- Indexes for table `announcement`
 --
 ALTER TABLE `announcement`
-  ADD PRIMARY KEY (`announcement_id`),
-  ADD KEY `adminId` (`admin_id`);
+  ADD PRIMARY KEY (`announcement_id`);
 
 --
 -- Indexes for table `booking`
@@ -461,7 +462,7 @@ ALTER TABLE `access_log`
 -- AUTO_INCREMENT for table `announcement`
 --
 ALTER TABLE `announcement`
-  MODIFY `announcement_id` int(20) NOT NULL AUTO_INCREMENT;
+  MODIFY `announcement_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `booking`
@@ -520,12 +521,6 @@ ALTER TABLE `access_log`
 --
 ALTER TABLE `admin`
   ADD CONSTRAINT `id_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`);
-
---
--- Constraints for table `announcement`
---
-ALTER TABLE `announcement`
-  ADD CONSTRAINT `adminId` FOREIGN KEY (`admin_id`) REFERENCES `admin` (`admin_id`);
 
 --
 -- Constraints for table `booking`

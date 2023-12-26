@@ -8,7 +8,8 @@
             <li><a href="maintenance_requests_worker.php">Update Maintenance Requests</a></li>
             <li><a href="add_announcement.php">Add Announcement</a></li>
             <li><a href="announcements.php">View Announcements</a></li>
-
+         
+            <li><a href="logout_worker.php">Logout</a></li>
             <!-- Add additional sidebar navigation links as needed -->
         </ul>
     </nav>

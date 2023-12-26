@@ -28,7 +28,7 @@ if ($result->num_rows == 1) {
 }
 
 // Fetch announcements for the worker
-$announcementsSql = "SELECT announcement_id, title, content, date, username AS worker_name
+$announcementsSql = "SELECT announcement_id, title, content, DATE_FORMAT(date, '%M %e, %Y') AS formatted_date, TIME_FORMAT(time, '%h:%i %p') AS formatted_time, media_url, username AS worker_name
                      FROM announcement
                      JOIN user ON announcement.worker_id = user.user_id
                      ORDER BY date DESC";
@@ -59,16 +59,29 @@ $conn->close();
                 <?php while ($row = $announcementsResult->fetch_assoc()): ?>
                     <li>
                         <h3><?php echo $row['title']; ?></h3>
-                        <p><?php echo $row['content']; ?></p>
-                        <p>Date: <?php echo $row['date']; ?></p>
+                        <p><?php echo $row['media_url']; ?></p>
+                        <p>Date: <?php echo $row['formatted_date']; ?> at <?php echo $row['formatted_time']; ?></p>
                         <p>Posted by: <?php echo $row['worker_name']; ?></p>
+                        <?php if (!empty($row['media_url'])): ?>
+                            <?php $mediaExtension = pathinfo($row['media_url'], PATHINFO_EXTENSION); ?>
+                            <?php if (in_array($mediaExtension, ['jpg', 'jpeg', 'png', 'gif'])): ?>
+                                <img src="../<?php echo $row['media_url']; ?>" alt="Image">
+                            <?php elseif (in_array($mediaExtension, ['mp4', 'webm', 'ogg'])): ?>
+                                <video width="320" height="240" controls>
+                                    <source src="../<?php echo $row['media_url']; ?>" type="video/<?php echo $mediaExtension; ?>">
+                                    Your browser does not support the video tag.
+                                </video>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                        <p><?php echo $row['content']; ?></p>
+                        <!-- Add a "Delete" link with confirmation -->
+                        <a href="delete_announcement.php?announcement_id=<?php echo $row['announcement_id']; ?>" onclick="return confirm('Are you sure you want to delete this announcement? (Yes/No)')">Delete</a>
                     </li>
                 <?php endwhile; ?>
             </ul>
         <?php else: ?>
             <p>No announcements available.</p>
         <?php endif; ?>
-        <p><a href="logout_worker.php">Logout</a></p>
     <?php else: ?>
         <p>Error: Worker not found.</p>
     <?php endif; ?>
