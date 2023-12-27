@@ -15,7 +15,6 @@ $userId = $_SESSION["user_id"];
 $fullname = $_POST['fullname'];
 $email = $_POST['email'];
 $phone = $_POST['phone'];
-$address = $_POST['address'];
 $emergencyContact = $_POST['emergency_contact'];
 
 // Update the user's profile
@@ -23,7 +22,6 @@ $sql = "UPDATE User
         SET fullname = '$fullname', 
             email = '$email', 
             phone_number = '$phone', 
-            address = '$address', 
             emergency_contact = '$emergencyContact' 
         WHERE user_id = $userId";
 

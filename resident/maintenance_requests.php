@@ -15,7 +15,7 @@ $userId = $_SESSION["user_id"];
 $maintenanceRequestsSql = "SELECT maintenance_request.request_id, category.category_name, maintenance_request.description,maintenance_request.location, maintenance_request.request_date , maintenance_request.urgency, maintenance_request.status
                           FROM maintenance_request
                           INNER JOIN category ON maintenance_request.category_id = category.category_id
-                          WHERE resident_id = (SELECT resident_id FROM resident WHERE user_id = $userId)";
+                          WHERE user_id = (SELECT user_id FROM user WHERE user_id = $userId)";
 $maintenanceRequestsResult = $conn->query($maintenanceRequestsSql);
 
 // Fetch categories from the database
@@ -30,8 +30,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $urgency = $_POST["urgency"];
 
     // Insert the maintenance request into the database
-    $insertRequestSql = "INSERT INTO maintenance_request (resident_id, category_id, location, description, urgency, status, request_date)
-                        VALUES ((SELECT resident_id FROM resident WHERE user_id = $userId), $categoryID, '$location', '$description', '$urgency', 'Pending', NOW())";
+    $insertRequestSql = "INSERT INTO maintenance_request (user_id, category_id, location, description, urgency, status, request_date)
+                        VALUES ((SELECT user_id FROM user WHERE user_id = $userId), $categoryID, '$location', '$description', '$urgency', 'Pending', NOW())";
 
     if ($conn->query($insertRequestSql) === true) {
         $requestSubmissionMessage = "Maintenance request submitted successfully!";

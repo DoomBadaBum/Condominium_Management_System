@@ -41,9 +41,9 @@ if ($availabilityResult->num_rows > 0) {
 }
 
 // Insert the booking into the database
-$insertBookingSql = "INSERT INTO booking (resident_id, facility_id, booking_date, start_time, end_time)
+$insertBookingSql = "INSERT INTO booking (user_id, facility_id, booking_date, start_time, end_time)
                     VALUES (
-                        (SELECT resident_id FROM resident WHERE user_id = $userId), 
+                        (SELECT user_id FROM user WHERE user_id = $userId), 
                         $facilityId, 
                         '$bookingDate', 
                         '$startTime', 
@@ -54,10 +54,9 @@ if ($conn->query($insertBookingSql) === TRUE) {
     $conn->close();
     echo '<script>alert("Booking successful!"); window.location.href = "facility_booking.php";</script>';
     exit();
-} else {
-    // Handle error
-    $conn->close();
-    echo '<script>alert("Error while booking. Please try again later."); window.location.href = "facility_booking.php";</script>';
-    exit();
+} 
+if (isset($errorMessage)) {
+    echo '<p style="color: red;">' . $errorMessage . '</p>';
 }
+
 ?>

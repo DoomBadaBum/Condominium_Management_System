@@ -21,9 +21,9 @@ $urgency = $_POST['urgency'];
 $requestDate = date('Y-m-d');
 
 // Insert the maintenance request into the database
-$insertRequestSql = "INSERT INTO maintenance_request (resident_id, category_id, location, description, urgency, status, request_date)
+$insertRequestSql = "INSERT INTO maintenance_request (user_id, category_id, location, description, urgency, status, request_date)
                     VALUES (
-                        (SELECT resident_id FROM resident WHERE user_id = $userId),
+                        (SELECT user_id FROM user WHERE user_id = $userId),
                         $categoryId,
                         '$location',
                         '$description',

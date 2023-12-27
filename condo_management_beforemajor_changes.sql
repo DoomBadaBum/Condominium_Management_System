@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 27, 2023 at 10:19 PM
+-- Generation Time: Dec 27, 2023 at 05:18 PM
 -- Server version: 5.7.33
 -- PHP Version: 7.4.19
 
@@ -82,7 +82,7 @@ INSERT INTO `announcement` (`announcement_id`, `title`, `content`, `date`, `work
 
 CREATE TABLE `booking` (
   `booking_id` int(20) NOT NULL,
-  `user_id` int(20) NOT NULL,
+  `resident_id` int(20) NOT NULL,
   `facility_id` int(20) NOT NULL,
   `booking_date` date NOT NULL,
   `start_time` time NOT NULL,
@@ -93,9 +93,11 @@ CREATE TABLE `booking` (
 -- Dumping data for table `booking`
 --
 
-INSERT INTO `booking` (`booking_id`, `user_id`, `facility_id`, `booking_date`, `start_time`, `end_time`) VALUES
-(7, 4, 1, '2023-12-28', '05:22:00', '06:22:00'),
-(8, 4, 1, '2023-12-29', '05:31:00', '06:31:00');
+INSERT INTO `booking` (`booking_id`, `resident_id`, `facility_id`, `booking_date`, `start_time`, `end_time`) VALUES
+(2, 1, 1, '2023-11-13', '18:42:00', '19:42:00'),
+(3, 1, 1, '2023-11-15', '18:47:00', '20:47:00'),
+(4, 1, 1, '2023-11-17', '18:52:00', '19:52:00'),
+(5, 1, 1, '2023-11-06', '18:58:00', '19:58:00');
 
 -- --------------------------------------------------------
 
@@ -147,7 +149,7 @@ CREATE TABLE `facility` (
 --
 
 INSERT INTO `facility` (`facility_id`, `facility_name`) VALUES
-(1, 'Kolam');
+(1, 'Kolam Renang');
 
 -- --------------------------------------------------------
 
@@ -178,7 +180,7 @@ CREATE TABLE `maintenance_request` (
   `assignment_date` datetime DEFAULT NULL,
   `location` varchar(255) DEFAULT NULL,
   `urgency` varchar(50) DEFAULT NULL,
-  `user_id` int(20) NOT NULL,
+  `resident_id` int(20) NOT NULL,
   `category_id` int(20) NOT NULL,
   `request_date` date DEFAULT NULL,
   `completion_date` date DEFAULT NULL
@@ -188,8 +190,13 @@ CREATE TABLE `maintenance_request` (
 -- Dumping data for table `maintenance_request`
 --
 
-INSERT INTO `maintenance_request` (`request_id`, `description`, `status`, `assigned_worker_id`, `assignment_date`, `location`, `urgency`, `user_id`, `category_id`, `request_date`, `completion_date`) VALUES
-(7, 'Blackout', 'Completed', 3, '2023-12-28 05:37:55', 'A02', 'High', 4, 2, '2023-12-27', '2023-12-28');
+INSERT INTO `maintenance_request` (`request_id`, `description`, `status`, `assigned_worker_id`, `assignment_date`, `location`, `urgency`, `resident_id`, `category_id`, `request_date`, `completion_date`) VALUES
+(1, '123', 'Completed', 3, '2023-11-16 17:06:10', '123', 'Low', 1, 3, '2023-11-16', '2023-11-16'),
+(2, 'Paip rosak', 'In Progress', 3, '2023-11-16 17:06:26', 'LOT A02', 'Medium', 1, 3, '2023-11-16', NULL),
+(3, 'air sumbat weyhhh', 'In Progress', 3, '2023-11-16 17:33:22', 'LOT A03', 'High', 1, 1, '2023-11-16', NULL),
+(4, 'Suis rosak', 'In Progress', 3, '2023-11-16 17:58:35', 'LOT A04', 'High', 1, 2, '2023-11-16', NULL),
+(5, '123', 'In Progress', 3, '2023-11-16 18:16:47', '123', 'High', 1, 3, '2023-11-16', NULL),
+(6, 'Tandas tersumbat', 'In Progress', 3, '2023-11-16 19:28:11', 'A05', 'High', 1, 1, '2023-11-16', NULL);
 
 -- --------------------------------------------------------
 
@@ -213,19 +220,39 @@ INSERT INTO `maintenance_worker` (`worker_id`, `worker_name`, `skillset`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `owner`
+--
+
+CREATE TABLE `owner` (
+  `owner_id` int(20) NOT NULL,
+  `user_id` int(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `owner`
+--
+
+INSERT INTO `owner` (`owner_id`, `user_id`) VALUES
+(1, 2);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `resident`
 --
 
 CREATE TABLE `resident` (
-  `resident_id` int(20) NOT NULL
+  `resident_id` int(20) NOT NULL,
+  `user_id` int(20) NOT NULL,
+  `unit_id` int(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `resident`
 --
 
-INSERT INTO `resident` (`resident_id`) VALUES
-(1);
+INSERT INTO `resident` (`resident_id`, `user_id`, `unit_id`) VALUES
+(1, 2, 1);
 
 -- --------------------------------------------------------
 
@@ -258,16 +285,16 @@ CREATE TABLE `unit` (
   `unit_number` varchar(20) NOT NULL,
   `size` float NOT NULL,
   `block_number` int(20) NOT NULL,
-  `floor` int(20) NOT NULL
+  `floor` int(20) NOT NULL,
+  `owner_id` int(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `unit`
 --
 
-INSERT INTO `unit` (`unit_id`, `unit_number`, `size`, `block_number`, `floor`) VALUES
-(1, 'A01', 139, 35, 15),
-(5, 'A02', 140, 35, 14);
+INSERT INTO `unit` (`unit_id`, `unit_number`, `size`, `block_number`, `floor`, `owner_id`) VALUES
+(1, 'A01', 139.355, 35, 15, 1);
 
 -- --------------------------------------------------------
 
@@ -294,8 +321,8 @@ CREATE TABLE `user` (
 
 INSERT INTO `user` (`user_id`, `username`, `password`, `role_id`, `fullname`, `email`, `phone_number`, `ic_number`, `emergency_contact`, `unit_id`) VALUES
 (1, 'danish', '123', 1, 'Muhammad Danish', 'danish@gmail.com', '01231111', '012515-05-0083', '999', NULL),
-(3, 'Iman', '123', 3, 'Yasmin Imanina', 'iman@gmail.com', '012-444-2244', '01222-01-2234', '124124124', NULL),
-(4, 'ejai', '123', 2, 'Ejai Leman', 'ejai@gmail.com', '012-444-2222', '011225-05-2213', '015-555-5555', 1);
+(2, 'ejai', '123', 2, 'Marc Marquez', 'ejai@gmail.com', '123415', '102011-03-0032', '922', 1),
+(3, 'Iman', '123', 3, 'Yasmin Imanina', 'iman@gmail.com', '012-444-2244', '01222-01-2234', '124124124', NULL);
 
 -- --------------------------------------------------------
 
@@ -340,8 +367,8 @@ ALTER TABLE `announcement`
 --
 ALTER TABLE `booking`
   ADD PRIMARY KEY (`booking_id`),
-  ADD KEY `facilityId` (`facility_id`),
-  ADD KEY `userId` (`user_id`);
+  ADD KEY `residentId` (`resident_id`),
+  ADD KEY `facilityId` (`facility_id`);
 
 --
 -- Indexes for table `category`
@@ -376,8 +403,8 @@ ALTER TABLE `maintenance_assignment`
 --
 ALTER TABLE `maintenance_request`
   ADD PRIMARY KEY (`request_id`),
-  ADD KEY `FK_categoryId` (`category_id`),
-  ADD KEY `FK_userId` (`user_id`);
+  ADD KEY `FK_residentId` (`resident_id`),
+  ADD KEY `FK_categoryId` (`category_id`);
 
 --
 -- Indexes for table `maintenance_worker`
@@ -386,10 +413,19 @@ ALTER TABLE `maintenance_worker`
   ADD PRIMARY KEY (`worker_id`);
 
 --
+-- Indexes for table `owner`
+--
+ALTER TABLE `owner`
+  ADD PRIMARY KEY (`owner_id`),
+  ADD KEY `IdUser` (`user_id`);
+
+--
 -- Indexes for table `resident`
 --
 ALTER TABLE `resident`
-  ADD PRIMARY KEY (`resident_id`);
+  ADD PRIMARY KEY (`resident_id`),
+  ADD KEY `userId` (`user_id`),
+  ADD KEY `unitId` (`unit_id`);
 
 --
 -- Indexes for table `role`
@@ -401,7 +437,8 @@ ALTER TABLE `role`
 -- Indexes for table `unit`
 --
 ALTER TABLE `unit`
-  ADD PRIMARY KEY (`unit_id`);
+  ADD PRIMARY KEY (`unit_id`),
+  ADD KEY `FKOwner_id` (`owner_id`);
 
 --
 -- Indexes for table `user`
@@ -438,7 +475,7 @@ ALTER TABLE `announcement`
 -- AUTO_INCREMENT for table `booking`
 --
 ALTER TABLE `booking`
-  MODIFY `booking_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `booking_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `category`
@@ -462,13 +499,13 @@ ALTER TABLE `maintenance_assignment`
 -- AUTO_INCREMENT for table `maintenance_request`
 --
 ALTER TABLE `maintenance_request`
-  MODIFY `request_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `request_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `unit`
 --
 ALTER TABLE `unit`
-  MODIFY `unit_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `unit_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `visitor`
@@ -497,7 +534,7 @@ ALTER TABLE `admin`
 --
 ALTER TABLE `booking`
   ADD CONSTRAINT `facilityId` FOREIGN KEY (`facility_id`) REFERENCES `facility` (`facility_id`),
-  ADD CONSTRAINT `userId` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`);
+  ADD CONSTRAINT `residentId` FOREIGN KEY (`resident_id`) REFERENCES `resident` (`resident_id`);
 
 --
 -- Constraints for table `document`
@@ -517,7 +554,25 @@ ALTER TABLE `maintenance_assignment`
 --
 ALTER TABLE `maintenance_request`
   ADD CONSTRAINT `FK_categoryId` FOREIGN KEY (`category_id`) REFERENCES `category` (`category_id`),
-  ADD CONSTRAINT `FK_userId` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`);
+  ADD CONSTRAINT `FK_residentId` FOREIGN KEY (`resident_id`) REFERENCES `resident` (`resident_id`);
+
+--
+-- Constraints for table `owner`
+--
+ALTER TABLE `owner`
+  ADD CONSTRAINT `IdUser` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`);
+
+--
+-- Constraints for table `resident`
+--
+ALTER TABLE `resident`
+  ADD CONSTRAINT `userId` FOREIGN KEY (`user_id`) REFERENCES `user` (`user_id`);
+
+--
+-- Constraints for table `unit`
+--
+ALTER TABLE `unit`
+  ADD CONSTRAINT `FKOwner_id` FOREIGN KEY (`owner_id`) REFERENCES `owner` (`owner_id`);
 
 --
 -- Constraints for table `user`

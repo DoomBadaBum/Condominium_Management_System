@@ -41,9 +41,21 @@ $conn->close();
             <form action="facility_booking.php" method="get">
                 <label for="facility">Select Facility:</label>
                 <select id="facility" name="facility" required>
-                    <?php while ($row = $facilityResult->fetch_assoc()): ?>
-                        <option value="<?php echo $row['facility_id']; ?>"><?php echo $row['facility_name']; ?></option>
-                    <?php endwhile; ?>
+                    <?php
+                    // Store facility results in an array
+                    $facilityOptions = [];
+                    while ($row = $facilityResult->fetch_assoc()) {
+                        $facilityOptions[] = $row;
+                    }
+
+                    // Reset the internal pointer
+                    reset($facilityOptions);
+
+                    // Display facility options
+                    foreach ($facilityOptions as $option) {
+                        echo '<option value="' . $option['facility_id'] . '">' . $option['facility_name'] . '</option>';
+                    }
+                    ?>
                 </select>
                 <input type="submit" value="View Booked Slots">
             </form>
@@ -64,6 +76,16 @@ $conn->close();
 
             <!-- Facility booking form -->
             <form action="book_facility.php" method="post">
+                <label for="facility">Select Facility:</label>
+                <select id="facility" name="facility" required>
+                    <?php
+                    // Display facility options from the stored array
+                    foreach ($facilityOptions as $option) {
+                        echo '<option value="' . $option['facility_id'] . '">' . $option['facility_name'] . '</option>';
+                    }
+                    ?>
+                </select><br>
+
                 <label for="booking_date">Booking Date:</label>
                 <input type="date" id="booking_date" name="booking_date" required><br>
 

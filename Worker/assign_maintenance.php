@@ -47,7 +47,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $updateStatusSql = "UPDATE maintenance_request SET status = 'In Progress', assigned_worker_id = $userId, assignment_date = NOW() WHERE request_id = $requestId";
 
     if ($conn->query($updateStatusSql) === TRUE) {
-        header("Location: assigned_maintenance.php?success=1");
+        echo '<script>alert("Maintenance request assigned successfully!");</script>';
+        echo '<script>window.location.href = "view_maintenance_requests.php";</script>';
         exit();
     } else {
         echo "Error updating maintenance request status: " . $conn->error;

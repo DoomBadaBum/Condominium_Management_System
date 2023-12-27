@@ -1,4 +1,7 @@
 <?php
+
+// Establish a database connection
+include '../include/connection.php';
 session_start();
 
 // Check if the user is authenticated
@@ -7,8 +10,9 @@ if (!isset($_SESSION["user_id"])) {
     exit();
 }
 
-// Establish a database connection
-include '../include/connection.php';
+// Header sidebar
+include '../include/header.php'; 
+include '../include/sidebar.php';
 
 // Fetch the current user's username
 $userId = $_SESSION["user_id"];
@@ -24,7 +28,7 @@ if ($result->num_rows == 1) {
 }
 
 // Fetch announcements for the worker
-$announcementsSql = "SELECT announcement_id, title, content, date, username AS worker_name
+$announcementsSql = "SELECT announcement_id, title, content, DATE_FORMAT(date, '%M %e, %Y') AS formatted_date, TIME_FORMAT(time, '%h:%i %p') AS formatted_time, media_url, username AS worker_name
                      FROM announcement
                      JOIN user ON announcement.worker_id = user.user_id
                      ORDER BY date DESC";
@@ -34,39 +38,49 @@ if ($announcementsResult === false) {
     die("Error executing announcements query: " . $conn->error);
 }
 
-// Close the database connection
 $conn->close();
 ?>
 
-<?php include '../include/header.php'; ?>
-
-<div class="container">
-    <?php include '../include/sidebar.php'; ?>
-
-    <main>
-        <h2>Welcome to the Dashboard, <?php echo $username; ?>!</h2>
-        <h2>Announcements</h2>
+<!-- HTML content for announcements page -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Announcements - Worker</title>
+</head>
+<body>
+    <h2>Announcements - Worker</h2>
     <?php if ($user): ?>
+        <p>Worker: <?php echo $user['username']; ?></p>
         <!-- Display announcements -->
         <?php if ($announcementsResult->num_rows > 0): ?>
             <ul>
                 <?php while ($row = $announcementsResult->fetch_assoc()): ?>
                     <li>
                         <h3><?php echo $row['title']; ?></h3>
-                        <p><?php echo $row['content']; ?></p>
-                        <p>Date: <?php echo $row['date']; ?></p>
+                        <p>Date: <?php echo $row['formatted_date']; ?> at <?php echo $row['formatted_time']; ?></p>
                         <p>Posted by: <?php echo $row['worker_name']; ?></p>
+                        <?php if (!empty($row['media_url'])): ?>
+                            <?php $mediaExtension = pathinfo($row['media_url'], PATHINFO_EXTENSION); ?>
+                            <?php if (in_array($mediaExtension, ['jpg', 'jpeg', 'png', 'gif'])): ?>
+                                <img src="../<?php echo $row['media_url']; ?>" alt="Image">
+                            <?php elseif (in_array($mediaExtension, ['mp4', 'webm', 'ogg'])): ?>
+                                <video width="320" height="240" controls>
+                                    <source src="../<?php echo $row['media_url']; ?>" type="video/<?php echo $mediaExtension; ?>">
+                                    Your browser does not support the video tag.
+                                </video>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                        <p><?php echo $row['content']; ?></p>
                     </li>
                 <?php endwhile; ?>
             </ul>
         <?php else: ?>
             <p>No announcements available.</p>
         <?php endif; ?>
-        <p><a href="logout_worker.php">Logout</a></p>
     <?php else: ?>
         <p>Error: Worker not found.</p>
     <?php endif; ?>
-    </main>
-</div>
-
-<?php include '../include/footer.php'; ?>
+</body>
+</html>

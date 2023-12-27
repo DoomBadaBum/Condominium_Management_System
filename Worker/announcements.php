@@ -3,7 +3,7 @@
 include '../include/connection.php';
 session_start();
 
-// Header footer
+// Header sidebar
 include '../include/header_worker.php'; 
 include '../include/sidebar_worker.php';
 
@@ -75,6 +75,7 @@ $conn->close();
                         <?php endif; ?>
                         <p><?php echo $row['content']; ?></p>
                         <!-- Add a "Delete" link with confirmation -->
+                        <a href="edit_announcement.php?announcement_id=<?php echo $row['announcement_id']; ?>">Update</a>
                         <a href="delete_announcement.php?announcement_id=<?php echo $row['announcement_id']; ?>" onclick="return confirm('Are you sure you want to delete this announcement? (Yes/No)')">Delete</a>
                     </li>
                 <?php endwhile; ?>

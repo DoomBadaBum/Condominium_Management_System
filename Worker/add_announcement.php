@@ -2,7 +2,7 @@
 include '../include/connection.php';
 session_start();
 
-// Header footer
+// Header sidebar
 include '../include/header_worker.php'; 
 include '../include/sidebar_worker.php';
 

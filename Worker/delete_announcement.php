@@ -34,7 +34,8 @@ if (isset($_GET['announcement_id'])) {
             }
 
             // Redirect to announcements page
-            header("Location: announcements.php");
+            echo '<script>alert("Announcement deleted successfully!");</script>';
+            echo '<script>window.location.href = "announcements.php";</script>';
             exit();
         } else {
             // Display the SQL error

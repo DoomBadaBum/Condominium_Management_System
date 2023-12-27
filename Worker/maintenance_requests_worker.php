@@ -36,7 +36,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                             WHERE request_id = $requestId";
 
     if ($conn->query($updateCompletionSql) === TRUE) {
-        header("Location: maintenance_requests_worker.php?success=2");
+        echo '<script>alert("Maintenance request updated successfully!");</script>';
+        echo '<script>window.location.href = "view_maintenance_requests.php";</script>';
         exit();
     } else {
         echo "Error updating maintenance request completion details: " . $conn->error;
