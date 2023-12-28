@@ -47,12 +47,12 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Announcements - Worker</title>
+    <title>Announcements - Resident</title>
 </head>
 <body>
-    <h2>Announcements - Worker</h2>
+    <h2>Announcements - Resident</h2>
     <?php if ($user): ?>
-        <p>Worker: <?php echo $user['username']; ?></p>
+        <p>Resident: <?php echo $user['username']; ?></p>
         <!-- Display announcements -->
         <?php if ($announcementsResult->num_rows > 0): ?>
             <ul>

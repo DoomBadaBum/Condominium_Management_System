@@ -18,15 +18,57 @@ $facilityResult = $conn->query($facilitySql);
 if (isset($_GET['facility'])) {
     $selectedFacility = $_GET['facility'];
 
-    $bookedSlotsSql = "SELECT booking_date, start_time, end_time 
+    $bookedSlotsSql = "SELECT booking_id, booking_date, start_time, end_time 
                       FROM booking 
                       WHERE facility_id = $selectedFacility";
 
     $bookedSlotsResult = $conn->query($bookedSlotsSql);
 }
 
-// Close the database connection
-$conn->close();
+$userId = $_SESSION["user_id"];
+$userBookedSlotsSql = "SELECT booking_id, f.facility_name, b.booking_date, b.start_time, b.end_time 
+                      FROM booking b
+                      JOIN facility f ON b.facility_id = f.facility_id
+                      WHERE b.user_id = $userId";
+
+$userBookedSlotsResult = $conn->query($userBookedSlotsSql);
+
+// Cancel booking
+if (isset($_POST['cancel_booking'])) {
+    $bookingId = $_POST['cancel_booking'];
+
+    // Fetch booking details
+    $bookingDetailsSql = "SELECT booking_date, start_time FROM booking WHERE booking_id = $bookingId";
+    $bookingDetailsResult = $conn->query($bookingDetailsSql);
+
+    if ($bookingDetailsResult->num_rows > 0) {
+        $bookingDetails = $bookingDetailsResult->fetch_assoc();
+        $bookingDate = $bookingDetails['booking_date'];
+        $bookingStartTime = $bookingDetails['start_time'];
+
+        // Check if the booking date and time haven't arrived yet
+        $currentDateTime = date("Y-m-d H:i:s");
+        $bookingDateTime = $bookingDate . ' ' . $bookingStartTime;
+
+        if ($currentDateTime < $bookingDateTime) {
+            // Perform the cancellation
+            $cancelBookingSql = "DELETE FROM booking WHERE booking_id = $bookingId";
+            if ($conn->query($cancelBookingSql) === TRUE) {
+                echo '<script>alert("Booking canceled successfully!"); window.location.href = "facility_booking.php";</script>';
+                exit();
+            } else {
+                echo '<script>alert("Error canceling booking."); window.location.href = "facility_booking.php";</script>';
+                exit();
+            }
+        } else {
+            echo '<script>alert("Cannot cancel booking, as the date and time have already passed."); window.location.href = "facility_booking.php";</script>';
+            exit();
+        }
+    } else {
+        echo '<script>alert("Booking details not found."); window.location.href = "facility_booking.php";</script>';
+        exit();
+    }
+}
 ?>
 
 <?php include '../include/header.php'; ?>
@@ -61,16 +103,59 @@ $conn->close();
             </form>
 
             <?php if (isset($bookedSlotsResult)): ?>
-                <!-- Display booked time slots -->
+                <!-- Display other resident booked time slots -->
                 <h3>Booked Time Slots:</h3>
                 <?php if ($bookedSlotsResult->num_rows > 0): ?>
                     <ul>
                         <?php while ($slot = $bookedSlotsResult->fetch_assoc()): ?>
-                            <li>Date: <?php echo $slot['booking_date']; ?>, Time: <?php echo $slot['start_time'] . ' - ' . $slot['end_time']; ?></li>
+                            <li>
+                                Date: <?php echo $slot['booking_date']; ?>,
+                                Time: <?php echo $slot['start_time'] . ' - ' . $slot['end_time']; ?>
+                                <?php
+                                // Check if the current date and time are before the booked date and time
+                                $currentDateTime = date("Y-m-d H:i:s");
+                                $bookingDateTime = $slot['booking_date'] . ' ' . $slot['start_time'];
+
+                                if ($currentDateTime < $bookingDateTime): ?>
+                                    <form action="facility_booking.php" method="post">
+                                        <input type="hidden" name="cancel_booking" value="<?php echo $slot['booking_id']; ?>">
+                                        <input type="submit" value="Cancel Booking">
+                                    </form>
+                                <?php endif; ?>
+                            </li>
                         <?php endwhile; ?>
                     </ul>
                 <?php else: ?>
                     <p>No booked time slots for the selected facility.</p>
+                <?php endif; ?>
+            <?php endif; ?>
+
+            <?php if (isset($userBookedSlotsResult)): ?>
+                <!-- Display user's booked time slots -->
+                <h3>Your Booked Time Slots:</h3>
+                <?php if ($userBookedSlotsResult->num_rows > 0): ?>
+                    <ul>
+                        <?php while ($slot = $userBookedSlotsResult->fetch_assoc()): ?>
+                            <li>
+                                Facility: <?php echo $slot['facility_name']; ?>,
+                                Date: <?php echo $slot['booking_date']; ?>,
+                                Time: <?php echo $slot['start_time'] . ' - ' . $slot['end_time']; ?>
+                                <?php
+                                // Check if the current date and time are before the booked date and time
+                                $currentDateTime = date("Y-m-d H:i:s");
+                                $bookingDateTime = $slot['booking_date'] . ' ' . $slot['start_time'];
+
+                                if ($currentDateTime < $bookingDateTime): ?>
+                                    <form action="facility_booking.php" method="post">
+                                        <input type="hidden" name="cancel_booking" value="<?php echo $slot['booking_id']; ?>">
+                                        <input type="submit" value="Cancel Booking">
+                                    </form>
+                                <?php endif; ?>
+                            </li>
+                        <?php endwhile; ?>
+                    </ul>
+                <?php else: ?>
+                    <p>No booked time slots for you.</p>
                 <?php endif; ?>
             <?php endif; ?>
 
