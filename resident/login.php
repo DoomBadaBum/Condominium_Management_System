@@ -32,5 +32,13 @@ $conn->close();
     <label for="password">Password:</label>
     <input type="password" id="password" name="password" required><br>
 
+    <a href="#" onclick="showForgotPasswordPopup()">Forgot Password</a>
+
     <input type="submit" value="Login">
 </form>
+
+<script>
+    function showForgotPasswordPopup() {
+        alert("Please contact staff +60186673078 for password assistance.");
+    }
+</script>

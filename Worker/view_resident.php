@@ -14,7 +14,7 @@ if (!isset($_SESSION["user_id"])) {
 }
 
 // Fetch residents
-$sqlResidents = "SELECT u.user_id, u.username, u.fullname, u.email, u.phone_number, u.ic_number, u.emergency_contact, u.unit_id, ur.unit_number, ur.block_number, ur.floor, ur.size
+$sqlResidents = "SELECT u.user_id, u.username, u.fullname, u.email, u.phone_number, u.ic_number, u.emergency_contact, u.unit_id, ur.unit_number, ur.block_number, ur.floor, ur.size, u.profile_pic
                  FROM user u
                  LEFT JOIN unit ur ON u.unit_id = ur.unit_id
                  WHERE u.role_id = 2"; // Assuming role_id 2 corresponds to the "Resident" role
@@ -40,6 +40,7 @@ $conn->close();
     <?php if ($resultResidents->num_rows > 0): ?>
         <table border="1">
             <tr>
+                <th>Profile Picture</th>
                 <th>Username</th>
                 <th>Full Name</th>
                 <th>Email</th>
@@ -54,6 +55,13 @@ $conn->close();
             </tr>
             <?php while ($row = $resultResidents->fetch_assoc()): ?>
                 <tr>
+                    <td>
+                        <?php if (!empty($row['profile_pic'])): ?>
+                            <img src="../profile_pics/<?php echo $row['profile_pic']; ?>" alt="Profile Picture" width="50">
+                        <?php else: ?>
+                            No Picture
+                        <?php endif; ?>
+                    </td>
                     <td><?php echo $row['username']; ?></td>
                     <td><?php echo $row['fullname']; ?></td>
                     <td><?php echo $row['email']; ?></td>

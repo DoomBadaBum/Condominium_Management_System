@@ -37,9 +37,60 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $emergency_contact = $_POST["emergency_contact"];
     $unit_id = $_POST["unit_id"];
 
-    // Insert resident into the database with the new user_id
-    $insertResidentSql = "INSERT INTO user (user_id, username, password, role_id, fullname, email, phone_number, ic_number, emergency_contact, unit_id)
-                          VALUES ($newUserId, '$username', '$password', $role_id, '$fullname', '$email', '$phone_number', '$ic_number', '$emergency_contact', $unit_id)";
+    // Handle image upload
+    $target_dir = "../profile_pics/";
+    $target_file = $target_dir . basename($_FILES["profile_pic"]["name"]);
+    $uploadOk = 1;
+    $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
+
+    // Check if image file is a actual image or fake image
+    if(isset($_POST["submit"])) {
+        $check = getimagesize($_FILES["profile_pic"]["tmp_name"]);
+        if($check !== false) {
+            echo "File is an image - " . $check["mime"] . ".";
+            $uploadOk = 1;
+        } else {
+            echo "File is not an image.";
+            $uploadOk = 0;
+        }
+    }
+
+    /*
+    // Check if file already exists
+    if (file_exists($target_file)) {
+        echo "Sorry, file already exists.";
+        $uploadOk = 0;
+    }
+
+    // Check file size
+    if ($_FILES["profile_pic"]["size"] > 500000) {
+        echo "Sorry, your file is too large.";
+        $uploadOk = 0;
+    }
+
+    // Allow certain file formats
+    if ($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
+        && $imageFileType != "gif") {
+        echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+        $uploadOk = 0;
+    }
+    // Check if $uploadOk is set to 0 by an error
+    if ($uploadOk == 0) {
+        echo "Sorry, your file was not uploaded.";
+    // if everything is ok, try to upload file
+    } else {
+        if (move_uploaded_file($_FILES["profile_pic"]["tmp_name"], $target_file)) {
+            echo "The file ". basename( $_FILES["profile_pic"]["name"]). " has been uploaded.";
+        } else {
+            echo "Sorry, there was an error uploading your file.";
+        }
+    }
+    */
+
+    // Insert resident into the database with the new user_id and profile picture file name
+    $profilePicFileName = basename($_FILES["profile_pic"]["name"]);
+    $insertResidentSql = "INSERT INTO user (user_id, username, password, role_id, fullname, email, phone_number, ic_number, emergency_contact, unit_id, profile_pic)
+                          VALUES ($newUserId, '$username', '$password', $role_id, '$fullname', '$email', '$phone_number', '$ic_number', '$emergency_contact', $unit_id, '$profilePicFileName')";
 
     if ($conn->query($insertResidentSql) === TRUE) {
         echo '<script>alert("Resident added successfully!");</script>';
@@ -73,7 +124,7 @@ $conn->close();
 </head>
 <body>
     <h2>Add Resident</h2>
-    <form action="add_resident.php" method="post">
+    <form action="add_resident.php" method="post" enctype="multipart/form-data">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required><br>
 
@@ -99,6 +150,9 @@ $conn->close();
         <select id="unit_id" name="unit_id" required>
             <?php echo $unitOptions; ?>
         </select><br>
+
+        <label for="profile_pic">Profile Picture:</label>
+        <input type="file" name="profile_pic" id="profile_pic" accept="image/*"><br>
 
         <input type="submit" value="Add Resident">
     </form>

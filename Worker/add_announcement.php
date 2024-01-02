@@ -5,6 +5,7 @@ session_start();
 // Header sidebar
 include '../include/header_worker.php'; 
 include '../include/sidebar_worker.php';
+date_default_timezone_set('Asia/Kuala_Lumpur'); // Set the timezone to Malaysian time
 
 // Check if the user is authenticated
 if (!isset($_SESSION["user_id"])) {

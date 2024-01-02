@@ -26,10 +26,12 @@ $sql = "UPDATE User
         WHERE user_id = $userId";
 
 if ($conn->query($sql) === TRUE) {
-    header("Location: profile.php?success=1");
+    echo '<script>alert("Profile updated successfully!");</script>';
+    echo '<script>window.location.href = "profile.php";</script>';
 } else {
     // Handle error
-    header("Location: profile.php?error=1");
+    echo '<script>alert("Failed to update Profile!");</script>';
+    echo '<script>window.location.href = "profile.php";</script>';
 }
 
 // Close the database connection

@@ -31,7 +31,7 @@ if ($result->num_rows == 1) {
 $announcementsSql = "SELECT announcement_id, title, content, DATE_FORMAT(date, '%M %e, %Y') AS formatted_date, TIME_FORMAT(time, '%h:%i %p') AS formatted_time, media_url, username AS worker_name
                      FROM announcement
                      JOIN user ON announcement.worker_id = user.user_id
-                     ORDER BY date DESC";
+                     ORDER BY date DESC, time DESC";
 $announcementsResult = $conn->query($announcementsSql);
 
 if ($announcementsResult === false) {

@@ -45,7 +45,19 @@ $conn->close();
     <h2>Resident Profile</h2>
 
     <?php if ($user): ?>
-        <form action="update_profile.php" method="post">
+        <form action="update_profile.php" method="post" enctype="multipart/form-data">
+            <!-- Display current profile picture -->
+            <label for="current_profile_pic">Current Profile Picture:</label>
+            <?php if (!empty($user['profile_pic'])): ?>
+                <img src="../profile_pics/<?php echo $user['profile_pic']; ?>" alt="Current Profile Picture" width="50">
+            <?php else: ?>
+                No Picture
+            <?php endif; ?>
+            <!--
+             File input for uploading a new profile picture
+            <label for="profile_pic">Upload New Profile Picture:</label>
+            <input type="file" id="profile_pic" name="profile_pic"><br>
+            -->
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" value="<?php echo $user['username']; ?>" readonly><br>
 

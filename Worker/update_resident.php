@@ -25,7 +25,7 @@ if ($resultResident === false) {
 }
 
 if ($resultResident->num_rows != 1) {
-    header("Location: view_resident.php");
+    header("Location: view_residents.php");
     exit();
 }
 
@@ -51,18 +51,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $emergency_contact = $_POST["emergency_contact"];
     $unit_id = $_POST["unit_id"];
 
+    // Handle profile picture upload
+    $profilePicFileName = $resident['profile_pic']; // Keep the existing profile picture if no new file is uploaded
+    if (!empty($_FILES['profile_pic']['name'])) {
+        $targetDir = "../profile_pics/";
+        $profilePicFileName = basename($_FILES['profile_pic']['name']);
+        $targetFilePath = $targetDir . $profilePicFileName;
+        move_uploaded_file($_FILES['profile_pic']['tmp_name'], $targetFilePath);
+    }
+
     // Update resident information in the database
     $updateResidentSql = "UPDATE user
                           SET fullname = '$fullname',
                               email = '$email',
                               phone_number = '$phone_number',
                               emergency_contact = '$emergency_contact',
-                              unit_id = $unit_id
+                              unit_id = $unit_id,
+                              profile_pic = '$profilePicFileName'
                           WHERE user_id = $userId";
 
     if ($conn->query($updateResidentSql) === TRUE) {
         echo '<script>alert("Resident updated successfully!");</script>';
-        echo '<script>window.location.href = "view_resident.php";</script>';
+        echo '<script>window.location.href = "view_resident.php?user_id=' . $userId . '";</script>';
         exit();
     } else {
         // Display the SQL error
@@ -83,7 +93,7 @@ $conn->close();
 </head>
 <body>
     <h2>Update Resident - Worker</h2>
-    <form action="update_resident.php?user_id=<?php echo $userId; ?>" method="post">
+    <form action="update_resident.php?user_id=<?php echo $userId; ?>" method="post" enctype="multipart/form-data">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" value="<?php echo $resident['username']; ?>" readonly><br>
 
@@ -108,6 +118,17 @@ $conn->close();
             <?php echo $unitOptions; ?>
         </select><br>
 
+        <!-- Display current profile picture -->
+        <label for="current_profile_pic">Current Profile Picture:</label>
+        <?php if (!empty($resident['profile_pic'])): ?>
+            <img src="../profile_pics/<?php echo $resident['profile_pic']; ?>" alt="Current Profile Picture" width="50">
+        <?php else: ?>
+            No Picture
+        <?php endif; ?>
+        <br>
+        <!-- File input for uploading a new profile picture -->
+        <label for="profile_pic">Upload New Profile Picture:</label>
+        <input type="file" id="profile_pic" name="profile_pic"><br>
         <input type="submit" value="Update Resident">
     </form>
 </body>

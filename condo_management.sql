@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 27, 2023 at 10:19 PM
+-- Generation Time: Jan 02, 2024 at 10:07 PM
 -- Server version: 5.7.33
 -- PHP Version: 7.4.19
 
@@ -72,7 +72,9 @@ CREATE TABLE `announcement` (
 --
 
 INSERT INTO `announcement` (`announcement_id`, `title`, `content`, `date`, `worker_id`, `media_url`, `time`) VALUES
-(3, 'Test123', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec tincidunt aliquet nibh, sit amet sollicitudin ipsum gravida ac. Aenean id urna ipsum. Mauris non orci euismod, malesuada sem quis, porta magna. Aliquam ultricies egestas erat eget sollicitudin. Suspendisse tincidunt nec odio vulputate aliquam. Ut in sem id enim gravida rutrum et at risus. Nunc quis nisl in nulla placerat euismod ut a augue. Morbi tempor euismod gravida. Phasellus nec pulvinar dolor. Cras rutrum enim blandit est eleifend, ac sagittis leo vehicula. Nulla sit amet cursus nunc. Nulla quis cursus nisl. Nam porttitor magna id justo volutpat porta. Etiam maximus nulla eget orci sollicitudin, ut venenatis sem euismod. Sed arcu tellus, commodo et tincidunt a, cursus vitae justo.', '2023-12-27', 3, 'media_uploads/658c5bf0c9512_DSAI.jpg', '17:16:32');
+(3, 'Test123', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec tincidunt aliquet nibh, sit amet sollicitudin ipsum gravida ac. Aenean id urna ipsum. Mauris non orci euismod, malesuada sem quis, porta magna. Aliquam ultricies egestas erat eget sollicitudin. Suspendisse tincidunt nec odio vulputate aliquam. Ut in sem id enim gravida rutrum et at risus. Nunc quis nisl in nulla placerat euismod ut a augue. Morbi tempor euismod gravida. Phasellus nec pulvinar dolor. Cras rutrum enim blandit est eleifend, ac sagittis leo vehicula. Nulla sit amet cursus nunc. Nulla quis cursus nisl. Nam porttitor magna id justo volutpat porta. Etiam maximus nulla eget orci sollicitudin, ut venenatis sem euismod. Sed arcu tellus, commodo et tincidunt a, cursus vitae justo.', '2023-12-27', 3, 'media_uploads/658c5bf0c9512_DSAI.jpg', '17:16:32'),
+(8, 'Test123', 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin ac molestie urna. Praesent feugiat, felis vel condimentum rutrum, turpis lacus tempor urna, at consectetur nulla ligula vel dolor. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Duis sodales nunc quis sodales interdum. Nulla magna nunc, tristique vel hendrerit quis, tincidunt ut enim. Mauris magna velit, molestie vehicula pretium imperdiet, pharetra eget est. Phasellus et ante nec eros euismod rutrum sit amet euismod elit. In a diam dui.', '2024-01-03', 3, 'media_uploads/65947b5d82047_ahmad maslan.jpg', '05:08:45'),
+(10, '123', '123', '2024-01-03', 3, NULL, '05:09:07');
 
 -- --------------------------------------------------------
 
@@ -94,8 +96,7 @@ CREATE TABLE `booking` (
 --
 
 INSERT INTO `booking` (`booking_id`, `user_id`, `facility_id`, `booking_date`, `start_time`, `end_time`) VALUES
-(7, 4, 1, '2023-12-28', '05:22:00', '06:22:00'),
-(8, 4, 1, '2023-12-29', '05:31:00', '06:31:00');
+(9, 4, 1, '2023-12-27', '07:59:00', '08:59:00');
 
 -- --------------------------------------------------------
 
@@ -147,7 +148,7 @@ CREATE TABLE `facility` (
 --
 
 INSERT INTO `facility` (`facility_id`, `facility_name`) VALUES
-(1, 'Kolam');
+(1, 'Kolam Renang');
 
 -- --------------------------------------------------------
 
@@ -189,7 +190,8 @@ CREATE TABLE `maintenance_request` (
 --
 
 INSERT INTO `maintenance_request` (`request_id`, `description`, `status`, `assigned_worker_id`, `assignment_date`, `location`, `urgency`, `user_id`, `category_id`, `request_date`, `completion_date`) VALUES
-(7, 'Blackout', 'Completed', 3, '2023-12-28 05:37:55', 'A02', 'High', 4, 2, '2023-12-27', '2023-12-28');
+(7, 'Blackout', 'Completed', 3, '2023-12-28 05:37:55', 'A02', 'High', 4, 2, '2023-12-27', '2023-12-28'),
+(8, 'Tersumbat', 'Completed', 3, '2023-12-28 07:20:11', 'A03', 'Low', 4, 1, '2023-12-27', '2023-12-28');
 
 -- --------------------------------------------------------
 
@@ -219,13 +221,6 @@ INSERT INTO `maintenance_worker` (`worker_id`, `worker_name`, `skillset`) VALUES
 CREATE TABLE `resident` (
   `resident_id` int(20) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-
---
--- Dumping data for table `resident`
---
-
-INSERT INTO `resident` (`resident_id`) VALUES
-(1);
 
 -- --------------------------------------------------------
 
@@ -285,17 +280,19 @@ CREATE TABLE `user` (
   `phone_number` varchar(20) DEFAULT NULL,
   `ic_number` varchar(14) DEFAULT NULL,
   `emergency_contact` varchar(255) DEFAULT NULL,
-  `unit_id` int(11) DEFAULT NULL
+  `unit_id` int(11) DEFAULT NULL,
+  `profile_pic` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
 --
 -- Dumping data for table `user`
 --
 
-INSERT INTO `user` (`user_id`, `username`, `password`, `role_id`, `fullname`, `email`, `phone_number`, `ic_number`, `emergency_contact`, `unit_id`) VALUES
-(1, 'danish', '123', 1, 'Muhammad Danish', 'danish@gmail.com', '01231111', '012515-05-0083', '999', NULL),
-(3, 'Iman', '123', 3, 'Yasmin Imanina', 'iman@gmail.com', '012-444-2244', '01222-01-2234', '124124124', NULL),
-(4, 'ejai', '123', 2, 'Ejai Leman', 'ejai@gmail.com', '012-444-2222', '011225-05-2213', '015-555-5555', 1);
+INSERT INTO `user` (`user_id`, `username`, `password`, `role_id`, `fullname`, `email`, `phone_number`, `ic_number`, `emergency_contact`, `unit_id`, `profile_pic`) VALUES
+(1, 'danish', '123', 1, 'Muhammad Danish', 'danish@gmail.com', '01231111', '012515-05-0083', '999', NULL, NULL),
+(3, 'Iman', '123', 3, 'Yasmin Imanina', 'iman@gmail.com', '012-444-2244', '01222-01-2234', '124124124', NULL, NULL),
+(4, 'ejai', '123', 2, 'Ejai Leman', 'ejai@gmail.com', '012-444-2222', '011225-05-2213', '015-555-5555', 1, NULL),
+(5, 'Afiq', '123', 2, 'Afiq Aminin Thaqif', 'afiq@gmail.com', '0132908044', '010115-52-1123', '015-555-5555', 5, 'Danish.jpeg');
 
 -- --------------------------------------------------------
 
@@ -432,13 +429,13 @@ ALTER TABLE `access_log`
 -- AUTO_INCREMENT for table `announcement`
 --
 ALTER TABLE `announcement`
-  MODIFY `announcement_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `announcement_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `booking`
 --
 ALTER TABLE `booking`
-  MODIFY `booking_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `booking_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `category`
@@ -462,7 +459,7 @@ ALTER TABLE `maintenance_assignment`
 -- AUTO_INCREMENT for table `maintenance_request`
 --
 ALTER TABLE `maintenance_request`
-  MODIFY `request_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `request_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT for table `unit`

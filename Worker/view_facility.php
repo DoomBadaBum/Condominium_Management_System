@@ -5,6 +5,13 @@ include '../include/connection.php';
 include '../include/header_worker.php'; 
 include '../include/sidebar_worker.php';
 
+session_start();
+
+// Check if the user is authenticated
+if (!isset($_SESSION["user_id"])) {
+    header("Location: login_worker.php");
+    exit();
+}
 
 // Fetch the list of facilities
 $facilitySql = "SELECT * FROM facility";
