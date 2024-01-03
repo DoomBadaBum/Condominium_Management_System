@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Jan 02, 2024 at 10:07 PM
+-- Generation Time: Jan 03, 2024 at 06:07 AM
 -- Server version: 5.7.33
 -- PHP Version: 7.4.19
 
@@ -96,7 +96,9 @@ CREATE TABLE `booking` (
 --
 
 INSERT INTO `booking` (`booking_id`, `user_id`, `facility_id`, `booking_date`, `start_time`, `end_time`) VALUES
-(9, 4, 1, '2023-12-27', '07:59:00', '08:59:00');
+(9, 4, 1, '2023-12-27', '07:59:00', '08:59:00'),
+(15, 5, 1, '2024-01-04', '11:42:00', '00:42:00'),
+(16, 5, 1, '2024-01-01', '11:42:00', '00:43:00');
 
 -- --------------------------------------------------------
 
@@ -148,7 +150,7 @@ CREATE TABLE `facility` (
 --
 
 INSERT INTO `facility` (`facility_id`, `facility_name`) VALUES
-(1, 'Kolam Renang');
+(1, 'Badminton Court');
 
 -- --------------------------------------------------------
 
@@ -191,7 +193,10 @@ CREATE TABLE `maintenance_request` (
 
 INSERT INTO `maintenance_request` (`request_id`, `description`, `status`, `assigned_worker_id`, `assignment_date`, `location`, `urgency`, `user_id`, `category_id`, `request_date`, `completion_date`) VALUES
 (7, 'Blackout', 'Completed', 3, '2023-12-28 05:37:55', 'A02', 'High', 4, 2, '2023-12-27', '2023-12-28'),
-(8, 'Tersumbat', 'Completed', 3, '2023-12-28 07:20:11', 'A03', 'Low', 4, 1, '2023-12-27', '2023-12-28');
+(8, 'Tersumbat', 'Completed', 3, '2023-12-28 07:20:11', 'A03', 'Low', 4, 1, '2023-12-27', '2023-12-28'),
+(9, 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam dapibus et risus vitae efficitur. Vestibulum in augue eget enim ullamcorper auctor. Morbi sit amet est lorem. Curabitur commodo efficitur justo ut maximus. Aenean dictum rutrum leo at mollis. Praesent viverra interdum malesuada. Ut malesuada sed enim eu fermentum. Nunc rutrum iaculis viverra. Mauris scelerisque sem a odio rutrum hendrerit. Aliquam quis est in metus viverra convallis eu in ante. Aenean eu sem eget purus hendrerit pretium dapibus eu nibh. Proin facilisis tellus sed euismod lacinia. Ut blandit aliquet finibus. Maecenas mauris mi, finibus ut consectetur ut, tempor sed sapien. Praesent viverra sed nisl ac pharetra. Aliquam pulvinar nulla sit amet enim mattis egestas.', 'Pending', NULL, NULL, '02', 'Medium', 5, 3, '2024-01-03', NULL),
+(12, 'Kipas Rosak', 'Pending', NULL, NULL, '02', 'Low', 5, 3, '2024-01-03', NULL),
+(13, 'Tandas Tersumbat', 'Pending', NULL, NULL, '02', 'High', 5, 1, '2024-01-03', NULL);
 
 -- --------------------------------------------------------
 
@@ -261,8 +266,8 @@ CREATE TABLE `unit` (
 --
 
 INSERT INTO `unit` (`unit_id`, `unit_number`, `size`, `block_number`, `floor`) VALUES
-(1, 'A01', 139, 35, 15),
-(5, 'A02', 140, 35, 14);
+(1, '06', 139, 35, 15),
+(5, '02', 140, 35, 14);
 
 -- --------------------------------------------------------
 
@@ -292,7 +297,7 @@ INSERT INTO `user` (`user_id`, `username`, `password`, `role_id`, `fullname`, `e
 (1, 'danish', '123', 1, 'Muhammad Danish', 'danish@gmail.com', '01231111', '012515-05-0083', '999', NULL, NULL),
 (3, 'Iman', '123', 3, 'Yasmin Imanina', 'iman@gmail.com', '012-444-2244', '01222-01-2234', '124124124', NULL, NULL),
 (4, 'ejai', '123', 2, 'Ejai Leman', 'ejai@gmail.com', '012-444-2222', '011225-05-2213', '015-555-5555', 1, NULL),
-(5, 'Afiq', '123', 2, 'Afiq Aminin Thaqif', 'afiq@gmail.com', '0132908044', '010115-52-1123', '015-555-5555', 5, 'Danish.jpeg');
+(5, 'Yasmin', '123', 2, 'Nur Yasmin Imanina', 'yasmin@gmail.com', '012482844', '151215-05-1223', '123-123-123', 5, 'ayang luvv.jpg');
 
 -- --------------------------------------------------------
 
@@ -429,13 +434,13 @@ ALTER TABLE `access_log`
 -- AUTO_INCREMENT for table `announcement`
 --
 ALTER TABLE `announcement`
-  MODIFY `announcement_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `announcement_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `booking`
 --
 ALTER TABLE `booking`
-  MODIFY `booking_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `booking_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `category`
@@ -459,7 +464,7 @@ ALTER TABLE `maintenance_assignment`
 -- AUTO_INCREMENT for table `maintenance_request`
 --
 ALTER TABLE `maintenance_request`
-  MODIFY `request_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `request_id` int(20) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
 -- AUTO_INCREMENT for table `unit`

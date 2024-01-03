@@ -140,7 +140,7 @@ $conn->close();
         <label for="phone_number">Phone Number:</label>
         <input type="text" id="phone_number" name="phone_number" required><br>
 
-        <label for="ic_number">IC Number:</label>
+        <label for="ic_number" minlength="14" maxlength="14">IC Number:</label>
         <input type="text" id="ic_number" name="ic_number" required><br>
 
         <label for="emergency_contact">Emergency Contact:</label>

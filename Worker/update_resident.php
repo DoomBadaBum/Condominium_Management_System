@@ -45,7 +45,9 @@ if ($resultUnits->num_rows > 0) {
 
 // Process the form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $username = $_POST["username"];
     $fullname = $_POST["fullname"];
+    $ic_number = $_POST["ic_number"];
     $email = $_POST["email"];
     $phone_number = $_POST["phone_number"];
     $emergency_contact = $_POST["emergency_contact"];
@@ -62,9 +64,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Update resident information in the database
     $updateResidentSql = "UPDATE user
-                          SET fullname = '$fullname',
+                          SET username ='$username',
+                              fullname = '$fullname',
                               email = '$email',
                               phone_number = '$phone_number',
+                              ic_number = '$ic_number',
                               emergency_contact = '$emergency_contact',
                               unit_id = $unit_id,
                               profile_pic = '$profilePicFileName'
@@ -95,7 +99,7 @@ $conn->close();
     <h2>Update Resident - Worker</h2>
     <form action="update_resident.php?user_id=<?php echo $userId; ?>" method="post" enctype="multipart/form-data">
         <label for="username">Username:</label>
-        <input type="text" id="username" name="username" value="<?php echo $resident['username']; ?>" readonly><br>
+        <input type="text" id="username" name="username" value="<?php echo $resident['username']; ?>" required><br>
 
         <label for="fullname">Full Name:</label>
         <input type="text" id="fullname" name="fullname" value="<?php echo $resident['fullname']; ?>" required><br>
@@ -107,7 +111,7 @@ $conn->close();
         <input type="text" id="phone_number" name="phone_number" value="<?php echo $resident['phone_number']; ?>" required><br>
 
         <label for="ic_number">IC Number:</label>
-        <input type="text" id="ic_number" name="ic_number" value="<?php echo $resident['ic_number']; ?>" readonly><br>
+        <input type="text" minlength="14" maxlength="14" id="ic_number" name="ic_number" value="<?php echo $resident['ic_number']; ?>" required><br>
 
         <label for="emergency_contact">Emergency Contact:</label>
         <input type="text" id="emergency_contact" name="emergency_contact" value="<?php echo $resident['emergency_contact']; ?>" required><br>

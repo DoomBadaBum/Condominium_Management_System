@@ -34,7 +34,7 @@ $insertRequestSql = "INSERT INTO maintenance_request (user_id, category_id, loca
 
 if ($conn->query($insertRequestSql) === TRUE) {
     // Use an absolute or root-relative URL for redirection
-    header("Location: maintenance_requests.php?success=1");
+    echo '<script>alert("Maintenance request added successfully!"); window.location.href = "maintenance_requests.php";</script>';
     exit();
 } else {
     // Display the SQL error
