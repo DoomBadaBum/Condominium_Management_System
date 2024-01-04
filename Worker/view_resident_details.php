@@ -1,33 +1,45 @@
 <?php
-    include '../include/connection.php';
-    session_start();
+include '../include/connection.php';
+session_start();
 
-    date_default_timezone_set('Asia/Kuala_Lumpur'); // Set the timezone to Malaysian time
-    // Check if the user is authenticated
-    if (!isset($_SESSION["user_id"])) {
-        header("Location: login_worker.php");
-        exit();
-    }
+// Check if the user is authenticated
+if (!isset($_SESSION["user_id"])) {
+    header("Location: login.php");
+    exit();
+}
 
-    // Check if the announcement_id is provided in the request
-    if (isset($_GET['announcement_id'])) {
-        $announcementId = $_GET['announcement_id'];
+// Fetch user worker details
+$sqlUser = "SELECT * FROM user WHERE user_id = " . $_SESSION["user_id"];
+$resultUser = $conn->query($sqlUser);
 
-        // Check if the logged-in worker created the announcement
-        $workerId = $_SESSION["user_id"];
-        $checkOwnershipSql = "SELECT * FROM announcement WHERE announcement_id = $announcementId AND worker_id = $workerId";
-        $result = $conn->query($checkOwnershipSql);
+if ($resultUser === false) {
+    die("Error executing user query: " . $conn->error);
+}
 
-        if ($result->num_rows == 1) {
-            // Fetch the announcement details for pre-filling the form
-            $row = $result->fetch_assoc();
-            $title = $row['title'];
-            $content = $row['content'];
-            $mediaUrl = $row['media_url'];
-            ?>
+$userWork = $resultUser->fetch_assoc();
 
-</body>
-</html>
+// Get user_id from the URL
+$user_id = $_GET['user_id'];
+$sql = "SELECT u.*, r.unit_number, r.block_number, r.floor, r.size
+        FROM user u
+        LEFT JOIN unit r ON u.unit_id = r.unit_id
+        WHERE u.user_id = $user_id";
+
+$result = $conn->query($sql);
+
+if ($result === false) {
+    die("Error executing user query: " . $conn->error);
+}
+
+if ($result->num_rows == 1) {
+    $user = $result->fetch_assoc();
+} else {
+    $user = null;
+}
+
+$conn->close();
+?>
+
 
 <!DOCTYPE html>
 <html data-bs-theme="light" lang="en">
@@ -35,14 +47,15 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Table - Brand</title>
+    <title>Profile - Brand</title>
     <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i&amp;display=swap">
+    <link rel="stylesheet" href="../https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i&amp;display=swap">
     <link rel="stylesheet" href="../assets/fonts/fontawesome-all.min.css">
     <link rel="stylesheet" href="../assets/fonts/font-awesome.min.css">
     <link rel="stylesheet" href="../assets/fonts/typicons.min.css">
     <link rel="stylesheet" href="../assets/fonts/fontawesome5-overrides.min.css">
     <link rel="stylesheet" href="../assets/css/Lightbox-Gallery-baguetteBox.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" />
 </head>
 
 <body id="page-top">
@@ -169,7 +182,7 @@
                             </li>
                             <div class="d-none d-sm-block topbar-divider"></div>
                             <li class="nav-item dropdown no-arrow">
-                                <div class="nav-item dropdown no-arrow"><a class="dropdown-toggle nav-link" aria-expanded="false" data-bs-toggle="dropdown" href="#"><span class="d-none d-lg-inline me-2 text-gray-600 small">Valerie Luna</span><img class="border rounded-circle img-profile" src="assets/img/avatars/avatar1.jpeg"></a>
+                                <div class="nav-item dropdown no-arrow"><a class="dropdown-toggle nav-link" aria-expanded="false" data-bs-toggle="dropdown" href="#"><span class="d-none d-lg-inline me-2 text-gray-600 small"><?php echo $userWork['fullname']; ?></span><img class="border rounded-circle img-profile" src="assets/img/avatars/avatar1.jpeg"></a>
                                     <div class="dropdown-menu shadow dropdown-menu-end animated--grow-in"><a class="dropdown-item" href="#"><i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Profile</a><a class="dropdown-item" href="#"><i class="fas fa-cogs fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Settings</a><a class="dropdown-item" href="#"><i class="fas fa-list fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Activity log</a>
                                         <div class="dropdown-divider"></div><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Logout</a>
                                     </div>
@@ -179,35 +192,87 @@
                     </div>
                 </nav>
                 <div class="container-fluid">
-                    <h3 class="text-dark mb-4">Update Announcements</h3>
-                    <div class="card shadow" style="margin-top: 20px;">
-                        <div class="card-header py-3">
-                            <p class="text-primary m-0 fw-bold">Update Announcements</p>
+                    <h3 class="text-dark mb-4">View Resident Details</h3>
+                    <div class="row" style="margin-right: 327px;margin-left: 352px;">
+                        <div class="col">
+                            <div class="card mb-3">
+                            <div class="card-body text-center shadow">
+                                    <?php if (!empty($user['profile_pic'])): ?>
+                                        <a data-fancybox="profile-picture" href="../profile_pics/<?php echo $user['profile_pic']; ?>">
+                                            <img class="rounded-circle mb-3 mt-4" src="../profile_pics/<?php echo $user['profile_pic']; ?>" alt="Current Profile Picture" width="140" height="140">
+                                        </a>
+                                    <?php else: ?>
+                                        <a data-fancybox="profile-picture" href="../profile_pics/no-user.png">
+                                            <img class="rounded-circle mb-3 mt-4" src="../profile_pics/no-user.png" alt="Current Profile Picture" width="50">
+                                        </a>
+                                    <?php endif; ?>
+                                    <!--<img class="rounded-circle mb-3 mt-4" src="../assets/img/dogs/image2.jpeg" width="160" height="160">-->
+                                </div>                            </div>
                         </div>
-                        <div class="card-body">
-                            <form action="update_announcement.php" method="post" enctype="multipart/form-data">
-                            <input type="hidden" name="announcement_id" value="<?php echo $announcementId; ?>">
-                                <div class="row">
-                                    <div class="col">
-                                        <div class="mb-3"><label class="form-label" for="title"><strong>Title</strong></label><input class="form-control" type="text" id="title" name="title" value="<?php echo $title; ?>" required></div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col">
-                                        <div class="mb-3"><label class="form-label" for="content"><strong>Content</strong></label><textarea class="form-control" id="content" name="content" required><?php echo $content; ?></textarea></div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col">
-                                        <div class="mb-3"><label class="form-label" for="media"><strong>Attach Media</strong></label><input class="form-control" type="file" id="media" name="media">
-                                            <?php if (!empty($mediaUrl)): ?>
-                                                <p>Current Media: <a href="../<?php echo $mediaUrl; ?>" target="_blank"><?php echo $mediaUrl; ?></a></p>
-                                            <?php endif; ?><br>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <div class="card shadow mb-3">
+                            <div class="card-header py-3">
+                                <p class="text-primary m-0 fw-bold">Resident Details</p>
+                            </div>
+                            <div class="card-body">
+                                <form action="update_profile.php" method="post" enctype="multipart/form-data">
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="username"><strong>Username</strong></label><input class="form-control" type="text" id="username" placeholder="user.name" name="username" value="<?php echo $user['username']; ?>" readonly></div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="email"><strong>Email Address</strong></label><input class="form-control" type="email" id="email" placeholder="user@example.com" name="email" value="<?php echo $user['email']; ?>"></div>
+                                            </div>
                                         </div>
-                                    </div>
-                                </div>
-                                <div class="mb-3"><input class="btn btn-primary btn-sm" type="submit" value="Update Announcement"></div>
-                            </form>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="first_name"><strong>Full Name</strong></label><input class="form-control" type="text" id="fullname" placeholder="John" name="fullname" value="<?php echo $user['fullname']; ?>" readonly></div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="age"><strong>Age</strong></label><input class="form-control" type="text" id="age" placeholder="John" name="age" value="<?php echo $user['age']; ?>" readonly></div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="gender"><strong>Gender</strong></label><input class="form-control" type="text" id="gender" placeholder="Doe" name="gender" value="<?php echo $user['gender']; ?>" readonly></div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="last_name"><strong>Phone Number</strong></label><input class="form-control" type="text" id="phone" placeholder="Doe" name="phone" value="<?php echo $user['phone_number']; ?>"></div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="first_name"><strong>IC Number</strong></label><input class="form-control" type="text" id="ic_number" placeholder="John" name="ic_number" value="<?php echo $user['ic_number']; ?>" readonly></div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="last_name"><strong>Emergency Contact</strong></label><input class="form-control" type="text" id="emergency_contact-2" placeholder="Doe" name="emergency_contact" value="<?php echo $user['emergency_contact']; ?>" readonly></div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="first_name"><strong>Unit Number</strong></label><input class="form-control" type="text" id="unit_number" placeholder="John" name="unit_number" value="<?php echo $user['unit_number']; ?>" readonly></div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="last_name"><strong>Block Number</strong></label><input class="form-control" type="text" id="block_number" placeholder="Doe" name="block_number" value="<?php echo $user['block_number']; ?>" readonly></div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="first_name"><strong>Floor</strong></label><input class="form-control" type="text" id="floor" placeholder="John" name="floor" value="<?php echo $user['floor']; ?>" readonly></div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="last_name"><strong>Unit Size m<sup>2</sup></strong></label><input class="form-control" type="text" id="size" placeholder="Doe" name="size" value="<?php echo $user['size']; ?>" readonly></div>
+                                            </div>
+                                        </div>
+                                        
+                                    </form>
+                                    <div class="mb-3"><a href="view_resident.php" class="btn btn-primary btn-sm" type="submit">Back</a></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -224,20 +289,23 @@
     <script src="../assets/js/Lightbox-Gallery-baguetteBox.min.js"></script>
     <script src="../assets/js/Lightbox-Gallery.js"></script>
     <script src="../assets/js/theme.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+    <script>
+        // Add this JavaScript code
+        $(document).ready(function () {
+            // Initialize Fancybox
+            $('[data-fancybox="gallery"]').fancybox({
+                buttons: [
+                    "zoom",
+                    "fullScreen",
+                    "close"
+                ],
+                loop: true
+            });
+        });
+    </script>
 </body>
+
 </html>
-
-            <?php
-        } else {
-            // Unauthorized access, redirect to announcements page
-            header("Location: announcements.php");
-            exit();
-        }
-    } else {
-        // announcement_id not provided, redirect to announcements page
-        header("Location: announcements.php");
-        exit();
-    }
-
-    $conn->close();
-    ?>

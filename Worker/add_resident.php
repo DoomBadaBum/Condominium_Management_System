@@ -36,6 +36,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $ic_number = $_POST["ic_number"];
     $emergency_contact = $_POST["emergency_contact"];
     $unit_id = $_POST["unit_id"];
+    $gender = $_POST["gender"];
+    $age = $_POST["age"];
+
 
     // Handle image upload
     $target_dir = "../profile_pics/";
@@ -89,8 +92,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Insert resident into the database with the new user_id and profile picture file name
     $profilePicFileName = basename($_FILES["profile_pic"]["name"]);
-    $insertResidentSql = "INSERT INTO user (user_id, username, password, role_id, fullname, email, phone_number, ic_number, emergency_contact, unit_id, profile_pic)
-                          VALUES ($newUserId, '$username', '$password', $role_id, '$fullname', '$email', '$phone_number', '$ic_number', '$emergency_contact', $unit_id, '$profilePicFileName')";
+    $insertResidentSql = "INSERT INTO user (user_id, username, password, role_id, fullname, email, phone_number, ic_number, emergency_contact, unit_id, profile_pic, gender, age)
+                          VALUES ($newUserId, '$username', '$password', $role_id, '$fullname', '$email', '$phone_number', '$ic_number', '$emergency_contact', $unit_id, '$profilePicFileName', '$gender', '$age')";
 
     if ($conn->query($insertResidentSql) === TRUE) {
         echo '<script>alert("Resident added successfully!");</script>';
@@ -133,6 +136,15 @@ $conn->close();
 
         <label for="fullname">Full Name:</label>
         <input type="text" id="fullname" name="fullname" required><br>
+
+        <label for="age">Age:</label>
+        <input type="text" id="age" name="age" required><br>
+
+        <label for="gender">Gender:</label>
+        <select id="gender" name="gender" required>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select><br>
 
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" required><br>

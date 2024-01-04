@@ -223,6 +223,14 @@ $conn->close();
                                             <div class="mb-3"><label class="form-label" for="first_name"><strong>Full Name</strong></label><input class="form-control" type="text" id="fullname" placeholder="John" name="fullname" value="<?php echo $user['fullname']; ?>" readonly></div>
                                         </div>
                                         <div class="col">
+                                            <div class="mb-3"><label class="form-label" for="age"><strong>Age</strong></label><input class="form-control" type="text" id="age" placeholder="John" name="age" value="<?php echo $user['age']; ?>" readonly></div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="mb-3"><label class="form-label" for="gender"><strong>Gender</strong></label><input class="form-control" type="text" id="gender" placeholder="Doe" name="gender" value="<?php echo $user['gender']; ?>" readonly></div>
+                                        </div>
+                                        <div class="col">
                                             <div class="mb-3"><label class="form-label" for="last_name"><strong>Phone Number</strong></label><input class="form-control" type="text" id="phone" placeholder="Doe" name="phone" value="<?php echo $user['phone_number']; ?>"></div>
                                         </div>
                                     </div>

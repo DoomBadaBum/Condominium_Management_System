@@ -238,10 +238,10 @@ $conn->close();
                     </div>
                 </nav>
                 <div class="container-fluid">
-                    <h3 class="text-dark mb-1">Dashboard</h3>
+                    <h3 class="text-dark mb-1">&nbsp&nbsp&nbsp&nbspDashboard</h3>
                     <div class="row">
                         <div class="col">
-                            <h4 style="color: rgb(0,0,0);">Latest - Announcements</h4>
+                            <h4 style="color: rgb(0,0,0);">&nbsp&nbsp&nbsp&nbsp&nbspLatest - Announcements</h4>
                         </div>
                     </div>
 
