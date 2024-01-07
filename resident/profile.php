@@ -180,8 +180,8 @@ $conn->close();
                     </div>
                 </nav>
                 <div class="container-fluid">
-                    <h3 class="text-dark mb-4">Profile</h3>
-                    <div class="row" style="margin-right: 600px;margin-left: 600px;">
+                    <h3 class="text-dark mb-4">View Resident Details</h3>
+                    <div class="row" style="margin-right: 327px;margin-left: 352px;">
                         <div class="col">
                             <div class="card mb-3">
                                 <div class="card-body text-center shadow">
@@ -196,7 +196,7 @@ $conn->close();
                                     <?php endif; ?>
                                     <!--<img class="rounded-circle mb-3 mt-4" src="../assets/img/dogs/image2.jpeg" width="160" height="160">-->
                                 </div>
-                            </div>
+                            </div>       
                         </div>
                     </div>
                 </div>

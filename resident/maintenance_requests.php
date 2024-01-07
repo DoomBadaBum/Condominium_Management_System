@@ -65,7 +65,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                         VALUES ((SELECT user_id FROM user WHERE user_id = $userId), $categoryID, '$location', '$description', '$urgency', 'Pending', NOW())";
 
     if ($conn->query($insertRequestSql) === true) {
-        $requestSubmissionMessage = "Maintenance request submitted successfully!";
+        echo '<script>alert("Maintenance requests added successfully!");</script>';
+        echo '<script>window.location.href = "maintenance_requests.php";</script>';
     } else {
         $requestSubmissionMessage = "Error submitting maintenance request: " . $conn->error;
     }
@@ -225,16 +226,18 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
                     </div>
                 </nav>
                 <div class="container-fluid">
-                    <h3 class="text-dark mb-4">Maintenance Requests</h3>
-                    <div class="card shadow" style="margin-top: 20px;">
-                        <div class="card-header py-3">
-                            <p class="text-primary m-0 fw-bold">Submitted Requests</p>
-                        </div>
-                        <div class="card-body">
-                            <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
-                            <?php if ($maintenanceRequestsResult->num_rows > 0): ?>
-                                <table class="table my-0" id="dataTable">
-                                    <thead>
+        <h3 class="text-dark mb-4">Maintenance Requests</h3>
+
+        <div class="card shadow" style="margin-top: 20px;">
+            <div class="card-header py-3">
+                <p class="text-primary m-0 fw-bold">Submitted Requests</p>
+            </div>
+            <div class="card-body">
+                <?php if ($maintenanceRequestsResult->num_rows > 0): ?>
+                    <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
+                        <!-- Display submitted maintenance requests table here -->
+                        <table class="table my-0" id="dataTable">
+                        <thead>
                                         <tr>
                                             <th style="padding-right: 184px;width: 151.922px;">Category</th>
                                             <th style="width: 100.703px;">Location</th>
@@ -259,94 +262,89 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
                                     <tfoot>
                                         <tr></tr>
                                     </tfoot>
-                                </table>
-                                <!-- Display pagination for Maintenance Requests -->
-<div class="row">
-    <div class="col-md-12">
-        <div class="text-end">
-            <nav aria-label="Page navigation example">
-                <ul class="pagination">
+                        </table>
 
-                    <?php
-                    // Calculate total number of results
-                    $totalResultsQuery = $conn->query("SELECT COUNT(*) as total FROM maintenance_request WHERE user_id = $userId");
-                    if ($totalResultsQuery === false) {
-                        die("Error calculating total results: " . $conn->error);
-                    }
+                        <!-- Display pagination for Maintenance Requests -->
+                        <div class="row">
+                        <div class="col-md-12">
+                                        <div class="text-end">
+                                            <nav aria-label="Page navigation example">
+                                                <ul class="pagination">
 
-                    $totalResultsRow = $totalResultsQuery->fetch_assoc();
-                    $totalResults = $totalResultsRow['total'];
-                    $totalPages = ceil($totalResults / $resultsPerPage);
+                                                    <?php
+                                                    // Calculate total number of results
+                                                    $totalResultsQuery = $conn->query("SELECT COUNT(*) as total FROM maintenance_request WHERE user_id = $userId");
+                                                    if ($totalResultsQuery === false) {
+                                                        die("Error calculating total results: " . $conn->error);
+                                                    }
 
-                    // Previous Button
-                    if ($page > 1) {
-                        echo "<li class='page-item'><a class='page-link' href='maintenance_requests.php?page=" . ($page - 1) . "'>&laquo; Previous</a></li>";
-                    }
+                                                    $totalResultsRow = $totalResultsQuery->fetch_assoc();
+                                                    $totalResults = $totalResultsRow['total'];
+                                                    $totalPages = ceil($totalResults / $resultsPerPage);
 
-                    for ($i = 1; $i <= $totalPages; $i++) {
-                        echo "<li class='page-item" . ($page == $i ? " active" : "") . "'><a class='page-link' href='maintenance_requests.php?page=$i'>$i</a></li>";
-                    }
+                                                    // Previous Button
+                                                    if ($page > 1) {
+                                                        echo "<li class='page-item'><a class='page-link' href='maintenance_requests.php?page=" . ($page - 1) . "'>&laquo; Previous</a></li>";
+                                                    }
 
-                    // Next Button
-                    if ($page < $totalPages) {
-                        echo "<li class='page-item'><a class='page-link' href='maintenance_requests.php?page=" . ($page + 1) . "'>Next &raquo;</a></li>";
-                    }
-                    ?>
-                </ul>
-            </nav>
+                                                    for ($i = 1; $i <= $totalPages; $i++) {
+                                                        echo "<li class='page-item" . ($page == $i ? " active" : "") . "'><a class='page-link' href='maintenance_requests.php?page=$i'>$i</a></li>";
+                                                    }
+
+                                                    // Next Button
+                                                    if ($page < $totalPages) {
+                                                        echo "<li class='page-item'><a class='page-link' href='maintenance_requests.php?page=" . ($page + 1) . "'>Next &raquo;</a></li>";
+                                                    }
+                                                    ?>
+                                                </ul>
+                                            </nav>
+                                        </div>
+                                    </div>
+                        </div>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <div class="card shadow" style="margin-top: 20px;">
+            <div class="card-header py-3">
+                <p class="text-primary m-0 fw-bold">Add Maintenance Requests</p>
+            </div>
+            <div class="card-body">
+                <form action="maintenance_requests.php" method="post">
+                    <div class="col">
+                        <label class="form-label" style="color: rgb(0,0,0);">Category</label>
+                        <select id="category" name="category" required>
+                            <?php while ($categoryRow = $categoriesResult->fetch_assoc()): ?>
+                                <option value="<?php echo $categoryRow['category_id']; ?>"><?php echo $categoryRow['category_name']; ?></option>
+                            <?php endwhile; ?>
+                        </select>
+                    </div>
+                    <div class="col" style="margin-top: 15px;">
+                        <label class="form-label" style="color: rgb(0,0,0);">Location</label>
+                        <input id="location" name="location" class="form-control" type="text">
+                    </div>
+                    <div class="col" style="margin-top: 15px;">
+                        <label class="form-label" style="color: rgb(0,0,0);">Description</label>
+                        <textarea class="form-control" id="description" name="description"></textarea>
+                    </div>
+                    <div class="col" style="margin-top: 15px;">
+                        <label for="urgency" class="form-label" style="color: rgb(0,0,0);">Urgency</label>
+                        <select id="urgency" name="urgency" required class="form-select">
+                            <option value="Low" selected="">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                    <div class="col" style="margin-top: 15px;">
+                        <input class="btn btn-primary" type="submit" value="Submit">
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card shadow" style="margin-top: 20px;">
-                        <div class="card-header py-3">
-                            <p class="text-primary m-0 fw-bold">Add Maintenance Requests</p>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col">
-                                <?php if (isset($requestSubmissionMessage)): ?>
-                                    <p><?php echo $requestSubmissionMessage; ?></p>
-                                <?php endif; ?>
-                                    <form action="submit_maintenance_request.php" method="post">
-                                        <div>
-                                            <div class="col"><label class="form-label" style="color: rgb(0,0,0);">Category</label>
-                                            <select id="category" name="category" required>
-                                                <?php while ($categoryRow = $categoriesResult->fetch_assoc()): ?>
-                                                    <option value="<?php echo $categoryRow['category_id']; ?>"><?php echo $categoryRow['category_name']; ?></option>
-                                                <?php endwhile; ?>
-                                            </select><br>
-                                            <?php else: ?>
-                                                <p>No categories available. Please contact the administrator.</p>
-                                            <?php endif; ?></div>
-                                        </div>                        
-                                        <div>
-                                            <div class="col" style="margin-top: 15px;"><label class="form-label" style="color: rgb(0,0,0);">Location</label><input id="location" name="location" class="form-control" type="text"></div>
-                                        </div>
-                                        <div>
-                                            <div class="col" style="margin-top: 15px;"><label class="form-label" style="color: rgb(0,0,0);">Description</label><textarea class="form-control" id="description" name="description"></textarea></div>
-                                        </div>
-                                        <div>
-                                            <div class="col" style="margin-top: 15px;"><label for="urgency" class="form-label" style="color: rgb(0,0,0);">Urgency</label>
-                                                    <select id="urgency" name="urgency" required class="form-select">  
-                                                        <option value="Low" selected="">Low</option>
-                                                        <option value="Medium">Medium</option>
-                                                        <option value="High">High</option>
-                                                </select></div>
-                                        </div>
-                                        <div>
-                                            <div class="col" style="margin-top: 15px;"><input class="btn btn-primary" type="submit"></div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <footer class="bg-white sticky-footer">
+
+    <footer class="bg-white sticky-footer">
                 <div class="container my-auto">
                     <div class="text-center my-auto copyright"><span>Copyright © Kemuncak Shah Alam 2024</span></div>
                 </div>
@@ -362,5 +360,4 @@ $page = isset($_GET['page']) ? $_GET['page'] : 1;
     $conn->close(); // Move this line here
     ?>
 </body>
-
 </html>
