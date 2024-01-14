@@ -37,7 +37,7 @@ $availabilityCheckSql = "SELECT * FROM booking
                              (start_time < '$endTime' AND end_time >= '$endTime')
                              OR
                              (start_time >= '$startTime' AND end_time <= '$endTime')
-                         ) DESC";
+                         ) ORDER BY booking_date DESC";
 
 $availabilityResult = $conn->query($availabilityCheckSql);
 
