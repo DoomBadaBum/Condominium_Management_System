@@ -1,6 +1,9 @@
 <?php
 session_start();
 
+// Set the timezone to Kuala Lumpur
+date_default_timezone_set('Asia/Kuala_Lumpur');
+
 // Initialize $page for pagination
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
 
@@ -40,10 +43,12 @@ if (isset($_GET['facility'])) {
     $offset = ($page - 1) * $limit;
 
     // Define $limit within the scope
-    $bookedSlotsSql = "SELECT booking_id, booking_date, start_time, end_time 
-                      FROM booking 
-                      WHERE facility_id = $selectedFacility
-                      LIMIT $limit OFFSET $offset";
+    $bookedSlotsSql = "SELECT b.booking_id, b.booking_date, b.start_time, b.end_time, f.facility_name
+                        FROM booking b
+                        JOIN facility f ON b.facility_id = f.facility_id
+                        WHERE b.facility_id = $selectedFacility 
+                        ORDER BY b.booking_date DESC, b.start_time DESC
+                        LIMIT $limit OFFSET $offset";
 
     $bookedSlotsResult = $conn->query($bookedSlotsSql);
 
@@ -54,11 +59,19 @@ if (isset($_GET['facility'])) {
     $totalPagesBookedSlots = ($limit > 0) ? ceil($totalBookedSlots / $limit) : 1;
 }
 
+$offset = ($page - 1) * $limit;
+
 $userId = $_SESSION["user_id"];
+// Fetch the user's booked time slots with pagination
+$userPage = isset($_GET['userPage']) ? $_GET['userPage'] : 1;
+$userOffset = ($userPage - 1) * $limit;
+
 $userBookedSlotsSql = "SELECT booking_id, f.facility_name, b.booking_date, b.start_time, b.end_time 
-                      FROM booking b
-                      JOIN facility f ON b.facility_id = f.facility_id
-                      WHERE b.user_id = $userId";
+                        FROM booking b
+                        JOIN facility f ON b.facility_id = f.facility_id
+                        WHERE b.user_id = $userId
+                        ORDER BY b.booking_date DESC, b.start_time DESC
+                        LIMIT $limit OFFSET $userOffset";
 
 $userBookedSlotsResult = $conn->query($userBookedSlotsSql);
 
@@ -203,7 +216,19 @@ if (isset($_POST['cancel_booking'])) {
                 </nav>
                 <div class="container-fluid">
                     <h3 class="text-dark mb-4">Facility Booking</h3>
-
+                    <div class="card shadow" style="margin-top: 20px;">
+                        <div class="card-header py-3" style="color: var(--bs-secondary-color);border-style: solid;border-top: 3px solid var(--bs-primary) ;border-right: 3px solid var(--bs-primary) ;border-bottom-style: solid;border-bottom-color: var(--bs-primary);border-left: 3px solid var(--bs-primary) ;">
+                            <p class="fs-4 text-center text-primary m-0 fw-bold">RULES FOR BOOKING</p>
+                        </div>
+                        <div class="card-body" style="border-top-style: none;border-top-color: var(--bs-primary);border-right-style: solid;border-right-color: var(--bs-primary);border-bottom-style: solid;border-bottom-color: var(--bs-primary);border-left-style: solid;border-left-color: var(--bs-primary);">
+                            <div class="row">
+                                <div class="col text-center">
+                                    <p class="text-start text-dark">1. Bookings are on a first-come, first-served basis.<br>2. Time slots for facility use may be limited to a specific duration.<br>3. Late cancellations may incur consequences or affect booking system operations.<br>4. Facility bookings are limited to residents and their registered guests.<br>5. Residents are responsible for the behavior of their guests.<br>6. Guests must be accompanied by a resident during facility use.<br>7. Users must keep noise levels at a reasonable volume to avoid disturbing other residents.<br>8. Users must comply with all condominium rules and regulations during facility use.<br>9. Parents or guardians must supervise children at all times.<br>10. Children may not be left unattended in the facility.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <br>
                                 <!-- Facility selection form -->
                     <form action="facility_booking.php" method="get">
                         <div class="row mb-3">
@@ -245,6 +270,7 @@ if (isset($_POST['cancel_booking'])) {
                                         <table class="table my-0" id="dataTable">
                                             <thead>
                                                 <tr>
+                                                    <th>Facility Name</th>
                                                     <th style="padding-right: 184px;">Date</th>
                                                     <th>Time</th>
                                                 </tr>
@@ -252,6 +278,7 @@ if (isset($_POST['cancel_booking'])) {
                                             <tbody>
                                                 <?php while ($slot = $bookedSlotsResult->fetch_assoc()): ?>
                                                     <tr>
+                                                        <td><?php echo $slot['facility_name']; ?></td>
                                                         <td><?php echo $slot['booking_date']; ?></td>
                                                         <td><?php echo $slot['start_time'] . ' - ' . $slot['end_time']; ?></td>
                                                         <td>
@@ -281,17 +308,18 @@ if (isset($_POST['cancel_booking'])) {
                         <!-- Display pagination for Booked Time Slots -->
                         <div class="pagination">
                             <ul class="pagination">
-                                    <?php if ($page > 1): ?>
-                                        <a href="facility_booking.php?facility=<?php echo $selectedFacility; ?>&page=<?php echo $page - 1; ?>" class="btn btn-primary">Previous</a>
-                                    <?php endif; ?>
-                                    <?php for ($i = 1; $i <= $totalPagesBookedSlots; $i++) : ?>
-                                        <a href="facility_booking.php?facility=<?php echo $selectedFacility; ?>&page=<?php echo $i; ?>"<?php echo ($i == $page) ? ' class="active"' : ''; ?>><?php echo $i; ?></a>
-                                    <?php endfor; ?>
-                                    <?php if ($page < $totalPagesBookedSlots): ?>
-                                        <a href="facility_booking.php?facility=<?php echo $selectedFacility; ?>&page=<?php echo $page + 1; ?>" class="btn btn-primary">Next</a>
-                                    <?php endif; ?>
-                                </div>
+                                <?php if ($page > 1): ?>
+                                    <a href="facility_booking.php?facility=<?php echo $selectedFacility; ?>&page=<?php echo $page - 1; ?>" class="btn btn-primary">Previous</a>
+                                <?php endif; ?>
+                                <?php for ($i = 1; $i <= $totalPagesBookedSlots; $i++) : ?>
+                                    <a href="facility_booking.php?facility=<?php echo $selectedFacility; ?>&page=<?php echo $i; ?>"<?php echo ($i == $page) ? ' class="active"' : ''; ?>><?php echo $i; ?></a>
+                                <?php endfor; ?>
+                                <?php if ($page < $totalPagesBookedSlots): ?>
+                                    <a href="facility_booking.php?facility=<?php echo $selectedFacility; ?>&page=<?php echo $page + 1; ?>" class="btn btn-primary">Next</a>
+                                <?php endif; ?>
                             </ul>
+                        </div>
+
                         <?php endif; ?>
 
                     <!-- Display user's booked time slots -->
@@ -346,20 +374,20 @@ if (isset($_POST['cancel_booking'])) {
                     <?php endif; ?>
                     <!-- Display pagination for User's Booked Time Slots -->
                     <div class="pagination">
-                        <?php if ($page > 1): ?>
-                            <a href="facility_booking.php?page=<?php echo $page - 1; ?>" class="btn btn-primary">Previous</a>
+                        <?php if ($userPage > 1): ?>
+                            <a href="facility_booking.php?userPage=<?php echo $userPage - 1; ?>" class="btn btn-primary">Previous</a>
                         <?php endif; ?>
                         <?php for ($i = 1; $i <= $totalPagesUserBookedSlots; $i++) : ?>
-                            <a href="facility_booking.php?page=<?php echo $i; ?>"<?php echo ($i == $page) ? ' class="active"' : ''; ?>><?php echo $i; ?></a>
+                            <a href="facility_booking.php?userPage=<?php echo $i; ?>"<?php echo ($i == $userPage) ? ' class="active"' : ''; ?>><?php echo $i; ?></a>
                         <?php endfor; ?>
-                        <?php if ($page < $totalPagesUserBookedSlots): ?>
-                            <a href="facility_booking.php?page=<?php echo $page + 1; ?>" class="btn btn-primary">Next</a>
+                        <?php if ($userPage < $totalPagesUserBookedSlots): ?>
+                            <a href="facility_booking.php?userPage=<?php echo $userPage + 1; ?>" class="btn btn-primary">Next</a>
                         <?php endif; ?>
                     </div>
                     <!-- Add Booking Form -->
                     <div class="card shadow" style="margin-top: 20px;">
                         <div class="card-header py-3">
-                            <p class="text-primary m-0 fw-bold">Add Booking</p>
+                            <p class="text-primary m-0 fw-bold">Add Facility Booking</p>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -398,6 +426,10 @@ if (isset($_POST['cancel_booking'])) {
                         </div>
                     </div>
                 </div>
+                <br>
+                <br>
+                <br>
+                <br>
             </div>
             <footer class="bg-white sticky-footer">
                 <div class="container my-auto">

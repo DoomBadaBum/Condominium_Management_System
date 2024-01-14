@@ -7,6 +7,9 @@ if (!isset($_SESSION["user_id"])) {
     exit();
 }
 
+// Set the timezone to Kuala Lumpur
+date_default_timezone_set('Asia/Kuala_Lumpur');
+
 // Establish a database connection
 include '../include/connection.php';
 
@@ -17,7 +20,12 @@ $bookingDate = $_POST['booking_date'];
 $startTime = $_POST['start_time'];
 $endTime = $_POST['end_time'];
 
-
+// Check if the booking date is in the past or today with a past time
+if (isBookingDateTimeInPast($bookingDate, $startTime)) {
+    $conn->close();
+    echo '<script>alert("Cannot make a booking for a past date or time. Please choose a future date and time."); window.location.href = "facility_booking.php";</script>';
+    exit();
+}
 
 // Check if the facility is available for the given time slot
 $availabilityCheckSql = "SELECT * FROM booking 
@@ -29,7 +37,7 @@ $availabilityCheckSql = "SELECT * FROM booking
                              (start_time < '$endTime' AND end_time >= '$endTime')
                              OR
                              (start_time >= '$startTime' AND end_time <= '$endTime')
-                         )";
+                         ) DESC";
 
 $availabilityResult = $conn->query($availabilityCheckSql);
 
@@ -54,9 +62,17 @@ if ($conn->query($insertBookingSql) === TRUE) {
     $conn->close();
     echo '<script>alert("Booking successful!"); window.location.href = "facility_booking.php";</script>';
     exit();
-} 
+}
+
 if (isset($errorMessage)) {
     echo '<p style="color: red;">' . $errorMessage . '</p>';
 }
 
+// Function to check if the booking date is in the past or today with a past time
+function isBookingDateTimeInPast($bookingDate, $startTime) {
+    $currentDateTime = date('Y-m-d H:i:s');
+    $bookingDateTime = $bookingDate . ' ' . $startTime;
+    
+    return ($bookingDateTime <= $currentDateTime);
+}
 ?>

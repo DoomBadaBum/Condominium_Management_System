@@ -26,7 +26,7 @@ if ($result->num_rows == 1) {
 // Fetch the list of maintenance requests for the current resident
 $userId = $_SESSION["user_id"];
 
-$resultsPerPage = 2; // Adjust the number of results per page as needed
+$resultsPerPage = 5; // Adjust the number of results per page as needed
 $page = isset($_GET['page']) ? $_GET['page'] : 1;
 $offset = ($page - 1) * $resultsPerPage;
 
