@@ -1,6 +1,5 @@
 <?php
 include '../include/connection.php';
-
 session_start();
 
 // Check if the user is authenticated
@@ -19,26 +18,22 @@ if ($result->num_rows == 1) {
     $user = null;
 }
 
-// Number of records per page
-$recordsPerPage = 5;
+// Fetch all residents for the dropdown (role_id = 2)
+$sqlResidents = "SELECT user_id, fullname FROM user WHERE role_id = 2";
+$resultResidents = $conn->query($sqlResidents);
 
-// Determine current page
-$page = isset($_GET['page']) ? $_GET['page'] : 1;
+if ($resultResidents === false) {
+    die("Error executing residents query: " . $conn->error);
+}
 
-// Calculate the offset for the SQL query
-$offset = ($page - 1) * $recordsPerPage;
+// Fetch all facilities for the dropdown
+$sqlFacilities = "SELECT facility_id, facility_name FROM facility";
+$resultFacilities = $conn->query($sqlFacilities);
 
-// Fetch facilities with LIMIT
-$facilitySql = "SELECT * FROM facility LIMIT $offset, $recordsPerPage";
-$facilityResult = $conn->query($facilitySql);
+if ($resultFacilities === false) {
+    die("Error executing facilities query: " . $conn->error);
+}
 
-// Calculate total number of pages
-$totalFacilitiesSql = "SELECT COUNT(*) as total FROM facility";
-$totalFacilitiesResult = $conn->query($totalFacilitiesSql);
-$totalFacilities = $totalFacilitiesResult->fetch_assoc()['total'];
-$totalPages = ceil($totalFacilities / $recordsPerPage);
-
-// Close the database connection
 $conn->close();
 ?>
 
@@ -79,7 +74,7 @@ $conn->close();
                     <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fas fa-user"></i>Resident</a>
                         <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_resident.php"><span>View Resident</span></a><a class="dropdown-item" href="add_resident.php"><span>Add Resident</span></a></div>
                     </li>
-                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link active" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-building-fill">
+                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-building-fill">
                                 <path d="M3 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3v-3.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V16h3a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1zm1 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5M4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM7.5 5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5m2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM4.5 8h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5m2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5"></path>
                             </svg>&nbsp;Facility</a>
                         <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_facility.php"><span>View Facility</span></a><a class="dropdown-item" href="add_facility.php"><span>Add Facility</span></a></div>
@@ -87,8 +82,8 @@ $conn->close();
                     <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fa fa-home"></i>Unit</a>
                         <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_unit.php"><span>View Unit</span></a><a class="dropdown-item" href="add_unit.php"><span>Add Unit</span></a></div>
                     </li>
-                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fas fa-table"></i>Booking Facility</a>
-                        <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_booking.php"><span>View Booking Facility</span></a><a class="dropdown-item" href="add_booking_facility.php"><span>Add Booking Facility</span></a></div>
+                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link active" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fas fa-table"></i>Booking Facility</a>
+                        <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_booking.php"><span>View Booking Facility</span></a><a class="dropdown-item" href="view_announcement.html"><span>Add Booking Facility</span></a></div>
                     </li>
                     <li class="nav-item"><a class="nav-link" href="logout_worker.php"><i class="fa fa-power-off"></i><span>Logout</span></a></li>
                     <li class="nav-item"></li>
@@ -98,7 +93,7 @@ $conn->close();
         </nav>
         <div class="d-flex flex-column" id="content-wrapper">
             <div id="content">
-                <nav class="navbar navbar-expand bg-white shadow mb-4 topbar static-top navbar-light">
+            <nav class="navbar navbar-expand bg-white shadow mb-4 topbar static-top navbar-light">
                     <div class="container-fluid"><button class="btn btn-link d-md-none rounded-circle me-3" id="sidebarToggleTop" type="button"><i class="fas fa-bars"></i></button>
                         <ul class="navbar-nav flex-nowrap ms-auto">
                             <li class="nav-item dropdown no-arrow">
@@ -112,78 +107,68 @@ $conn->close();
                     </div>
                 </nav>
                 <div class="container-fluid">
-                    <h3 class="text-dark mb-4">View Facilities</h3>
+                    <h3 class="text-dark mb-4">Add Booking Facility</h3>
                     <div class="card shadow" style="margin-top: 20px;">
                         <div class="card-header py-3">
-                            <p class="text-primary m-0 fw-bold">View Facilities</p>
+                            <p class="text-primary m-0 fw-bold">Add Booking Facility</p>
                         </div>
                         <div class="card-body">
-                            <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
-                                <?php if ($facilityResult->num_rows > 0): ?>
-                                <table class="table my-0" id="dataTable">
-                                    <thead>
-                                        <tr>
-                                            <th style="padding: 7px 184px 8px 8px;padding-right: 0px;width: 151.922px;">Facility Name</th>
-                                            <th style="width: 129.156px;">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <?php while ($row = $facilityResult->fetch_assoc()): ?>
-                                    <tbody>
-                                        <tr>
-                                            <td style="height: 42px;"><?php echo $row['facility_name']; ?></td>
-                                            <td>
-                                                <a class="btn btn-warning" style="margin-top: 7px;margin-right: 10px;" href="update_facility.php?facility_id=<?php echo $row['facility_id']; ?>">Update</a>
-                                                <a class="btn btn-danger" style="min-width: 79px;margin-top: 7px;" href="delete_facility.php?facility_id=<?php echo $row['facility_id']; ?>" onclick="return confirm('Are you sure you want to delete this facility?')">Delete</a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                    <tfoot>
-                                        <tr></tr>
-                                    </tfoot>
-                                    <?php endwhile; ?>
-                                </table>
-                                <?php else: ?>
-                                    <p>No facilities available.</p>
-                                <?php endif; ?>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 align-self-center">
-                                    <p id="dataTable_info" class="dataTables_info" role="status" aria-live="polite">
-                                        <?php
-                                        $startRecord = $offset + 1;
-                                        $endRecord = min(($offset + $recordsPerPage), $totalFacilities);
-                                        echo "Showing $startRecord to $endRecord of $totalFacilities";
-                                        ?>
-                                    </p>
+                            <form action="add_booking_facility_process.php" method="post">
+                            <input type="hidden" name="booking_id" value="<?php echo $bookingDetails['booking_id']; ?>">
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="mb-3">
+                                            <label for="user_id" class="form-label">Resident</label>
+                                            <select class="form-control" id="user_id" name="user_id" required>
+                                                <?php while ($resident = $resultResidents->fetch_assoc()): ?>
+                                                    <option value="<?php echo $resident['user_id']; ?>">
+                                                        <?php echo $resident['fullname']; ?>
+                                                    </option>
+                                                <?php endwhile; ?>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
-                                <?php if ($totalPages > 1): ?>
-                                <div class="col-md-6">
-                                    <nav class="d-lg-flex justify-content-lg-end dataTables_paginate paging_simple_numbers">
-                                        <ul class="pagination">
-                                            <?php if ($page > 1) : ?>
-                                                <li class="page-item">
-                                                    <a class="page-link" href="?page=<?php echo ($page - 1); ?>" aria-label="Previous">
-                                                        <span aria-hidden="true">&laquo; Previous</span>
-                                                    </a>
-                                                </li>
-                                            <?php endif; ?>
-                                            <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
-                                                <li class="page-item <?php if ($i == $page) echo 'active'; ?>">
-                                                    <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
-                                                </li>
-                                            <?php endfor; ?>
-                                            <?php if ($page < $totalPages) : ?>
-                                                <li class="page-item">
-                                                    <a class="page-link" href="?page=<?php echo ($page + 1); ?>" aria-label="Next">
-                                                        <span aria-hidden="true">Next &raquo;</span>
-                                                    </a>
-                                                </li>
-                                            <?php endif; ?>
-                                        </ul>
-                                    </nav>
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="mb-3">
+                                            <label for="facility_id" class="form-label">Facility</label>
+                                            <select class="form-control" id="facility_id" name="facility_id" required>
+                                                <?php while ($facility = $resultFacilities->fetch_assoc()): ?>
+                                                    <option value="<?php echo $facility['facility_id']; ?>">
+                                                        <?php echo $facility['facility_name']; ?>
+                                                    </option>
+                                                <?php endwhile; ?>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
-                                <?php endif; ?>
-                            </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="mb-3">
+                                            <label for="booking_date" class="form-label">Booking Date</label>
+                                            <input type="date" class="form-control" id="booking_date" name="booking_date" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="mb-3">
+                                            <label for="start_time" class="form-label">Start Time</label>
+                                            <input type="time" class="form-control" id="start_time" name="start_time" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="mb-3">
+                                            <label for="end_time" class="form-label">End Time</label>
+                                            <input type="time" class="form-control" id="end_time" name="end_time" required>                                      
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3"><button class="btn btn-primary btn-sm" type="submit">Add Booking Facility</button></div>
+                            </form>
                         </div>
                     </div>
                 </div>

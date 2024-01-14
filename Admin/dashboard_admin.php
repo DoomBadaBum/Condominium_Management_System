@@ -3,7 +3,7 @@
 session_start();
 
 if (!isset($_SESSION["user_id"])) {
-    header("Location: login_worker.php");
+    header("Location: login_admin.php");
     exit();
 }
 
@@ -38,10 +38,10 @@ function getCount($category, $conn, $condition = '') {
 }
 
 
-$role2Count = getCount('user', $conn, 'role_id = 2');
+$role3Count = getCount('user', $conn, 'role_id = 3');
 
 // Get counts for each category
-$residentCount = getCount('user', $conn);
+$workerCount = getCount('user', $conn);
 $facilitiesCount = getCount('facility', $conn);
 $maintenancePendingCount = getCount('maintenance_request', $conn , 'status = "Pending"');
 $maintenanceInProgressCount = getCount('maintenance_request', $conn , 'status = "In Progress"');
@@ -99,7 +99,7 @@ $unitCount = getCount('unit', $conn);
                     <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fas fa-table"></i>Booking Facility</a>
                         <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_booking.php"><span>View Booking Facility</span></a><a class="dropdown-item" href="add_booking_facility.php"><span>Add Booking Facility</span></a></div>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="logout_worker.php"><i class="fa fa-power-off"></i><span>Logout</span></a></li>
+                    <li class="nav-item"><a class="nav-link" href="logout_admin.php"><i class="fa fa-power-off"></i><span>Logout</span></a></li>
                     <li class="nav-item"></li>
                     <li class="nav-item"></li>
                 </ul>
@@ -140,8 +140,8 @@ $unitCount = getCount('unit', $conn);
                                 <div class="card-body">
                                     <div class="row align-items-center no-gutters">
                                         <div class="col me-2">
-                                            <div class="text-uppercase text-primary fw-bold text-xs mb-1"><span>RESIDENTS</span></div>
-                                            <div class="text-dark fw-bold h5 mb-0"><span><?php echo $role2Count; ?></span></div>
+                                            <div class="text-uppercase text-primary fw-bold text-xs mb-1"><span>WORKERS</span></div>
+                                            <div class="text-dark fw-bold h5 mb-0"><span><?php echo $role3Count; ?></span></div>
                                         </div>
                                         <div class="col-auto"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-people-fill fa-2x text-gray-300">
                                                 <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6m-5.784 6A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1zM4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5"></path>

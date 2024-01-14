@@ -3,7 +3,7 @@
 session_start();
 
 if (isset($_SESSION['user_id'])) {
-    header("Location: dashboard_worker.php");
+    header("Location: dashboard_admin.php");
     exit();
 }
 
@@ -13,13 +13,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST["username"];
     $password = $_POST["password"];
 
-    $sql = "SELECT * FROM user WHERE username = '$username' AND password = '$password' AND role_id = 3";
+    $sql = "SELECT * FROM user WHERE username = '$username' AND password = '$password' AND role_id = 1";
     $result = $conn->query($sql);
 
     if ($result->num_rows == 1) {
         $user = $result->fetch_assoc();
         $_SESSION["user_id"] = $user['user_id'];
-        header("Location: dashboard_worker.php");
+        header("Location: dashboard_admin.php");
         exit();
     } else {
         $error_message = "Invalid username or password.";
@@ -56,7 +56,7 @@ $conn->close();
                                     <div class="text-center">
                                         <h4 class="text-dark mb-4">Welcome To <br>Kemuncak Shah Alam!</h4>
                                     </div>
-                                    <form class="user" action="login_worker.php" method="post">
+                                    <form class="user" action="login_admin.php" method="post">
                                         <div class="mb-3"><input class="form-control form-control-user" type="text" id="username" aria-describedby="emailHelp" placeholder="Username" name="username"></div>
                                         <div class="mb-3"><input class="form-control form-control-user" type="password" id="exampleInputPassword" placeholder="Password" name="password"></div>
                                         <div class="mb-3">

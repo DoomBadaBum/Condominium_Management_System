@@ -28,6 +28,22 @@ if ($resultResidents === false) {
     die("Error executing residents query: " . $conn->error);
 }
 
+// Pagination
+$limit = 5; // Number of records per page
+$totalRecords = $resultResidents->num_rows;
+$totalPages = ceil($totalRecords / $limit);
+
+if (!isset($_GET['page'])) {
+    $page = 1;
+} else {
+    $page = $_GET['page'];
+}
+
+$offset = ($page - 1) * $limit;
+
+$sqlResidents .= " LIMIT $offset, $limit";
+$resultResidents = $conn->query($sqlResidents);
+
 $conn->close();
 ?>
 
@@ -79,8 +95,10 @@ $conn->close();
                     <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fa fa-home"></i>Unit</a>
                         <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_unit.php"><span>View Unit</span></a><a class="dropdown-item" href="add_unit.php"><span>Add Unit</span></a></div>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="view_booking.php"><i class="fas fa-table"></i><span>Facility Booking</span></a></li>
-                    <li class="nav-item"><a class="nav-link" href="register.html"><i class="fa fa-power-off"></i><span>Logout</span></a></li>
+                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fas fa-table"></i>Booking Facility</a>
+                        <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_booking.php"><span>View Booking Facility</span></a><a class="dropdown-item" href="add_booking_facility.php"><span>Add Booking Facility</span></a></div>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="logout_worker.php"><i class="fa fa-power-off"></i><span>Logout</span></a></li>
                     <li class="nav-item"></li>
                     <li class="nav-item"></li>
                 </ul>
@@ -155,20 +173,42 @@ $conn->close();
                             </div>
                             <div class="row">
                                 <div class="col-md-6 align-self-center">
-                                    <p id="dataTable_info" class="dataTables_info" role="status" aria-live="polite">Showing 1 to 10 of 27</p>
+                                    <p id="dataTable_info" class="dataTables_info" role="status" aria-live="polite">
+                                        <?php
+                                        $startRecord = $offset + 1;
+                                        $endRecord = min(($offset + $limit), $totalRecords);
+                                        echo "Showing $startRecord to $endRecord of $totalRecords";
+                                        ?>
+                                    </p>
                                 </div>
+                                <?php if ($totalPages > 1): ?>
                                 <div class="col-md-6">
                                     <nav class="d-lg-flex justify-content-lg-end dataTables_paginate paging_simple_numbers">
                                         <ul class="pagination">
-                                            <li class="page-item disabled"><a class="page-link" aria-label="Previous" href="#"><span aria-hidden="true">«</span></a></li>
-                                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                            <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                            <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                            <li class="page-item"><a class="page-link" aria-label="Next" href="#"><span aria-hidden="true">»</span></a></li>
+                                            <?php if ($page > 1) : ?>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page=<?php echo ($page - 1); ?>" aria-label="Previous">
+                                                        <span aria-hidden="true">&laquo; Previous</span>
+                                                    </a>
+                                                </li>
+                                            <?php endif; ?>
+                                            <?php for ($i = 1; $i <= $totalPages; $i++) : ?>
+                                                <li class="page-item <?php if ($i == $page) echo 'active'; ?>">
+                                                    <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                                </li>
+                                            <?php endfor; ?>
+                                            <?php if ($page < $totalPages) : ?>
+                                                <li class="page-item">
+                                                    <a class="page-link" href="?page=<?php echo ($page + 1); ?>" aria-label="Next">
+                                                        <span aria-hidden="true">Next &raquo;</span>
+                                                    </a>
+                                                </li>
+                                            <?php endif; ?>
                                         </ul>
                                     </nav>
                                 </div>
                             </div>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

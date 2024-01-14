@@ -23,20 +23,28 @@ if ($result->num_rows == 1) {
     $user = null;
 }
 
-// Fetch announcements for the worker
-$announcementsSql = "SELECT announcement_id, title, content, DATE_FORMAT(date, '%M %e, %Y') AS formatted_date, TIME_FORMAT(time, '%h:%i %p') AS formatted_time, media_url, username AS worker_name
+// Pagination
+$limit = 5; // Number of records to show per page
+$page = isset($_GET['page']) ? $_GET['page'] : 1;
+$start = ($page - 1) * $limit;
+
+// Fetch announcements for the worker with pagination
+$announcementsSql = "SELECT SQL_CALC_FOUND_ROWS announcement_id, title, content, DATE_FORMAT(date, '%M %e, %Y') AS formatted_date, TIME_FORMAT(time, '%h:%i %p') AS formatted_time, media_url, username AS worker_name
                      FROM announcement
                      JOIN user ON announcement.worker_id = user.user_id
-                     ORDER BY date DESC, time DESC";
+                     ORDER BY date DESC, time DESC
+                     LIMIT $start, $limit";
 $announcementsResult = $conn->query($announcementsSql);
 
 if ($announcementsResult === false) {
     die("Error executing announcements query: " . $conn->error);
 }
 
+// Get total number of records for pagination
+$totalRecords = $conn->query("SELECT FOUND_ROWS() as total")->fetch_assoc()['total'];
+
 $conn->close();
 ?>
-
 
 <!DOCTYPE html>
 <html data-bs-theme="light" lang="en">
@@ -92,8 +100,10 @@ $conn->close();
                     <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fa fa-home"></i>Unit</a>
                         <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_unit.php"><span>View Unit</span></a><a class="dropdown-item" href="add_unit.php"><span>Add Unit</span></a></div>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="view_booking.php"><i class="fas fa-table"></i><span>Facility Booking</span></a></li>
-                    <li class="nav-item"><a class="nav-link" href="register.html"><i class="fa fa-power-off"></i><span>Logout</span></a></li>
+                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fas fa-table"></i>Booking Facility</a>
+                        <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_booking.php"><span>View Booking Facility</span></a><a class="dropdown-item" href="add_booking_facility.php"><span>Add Booking Facility</span></a></div>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="logout_worker.php"><i class="fa fa-power-off"></i><span>Logout</span></a></li>
                     <li class="nav-item"></li>
                     <li class="nav-item"></li>
                 </ul>
@@ -162,34 +172,50 @@ $conn->close();
             </div>
             <div class="container">
                 <div class="row">
-                    <div class="col" style="margin-top: 33px;">
-                        <h6>Heading</h6>
-                        <nav>
-                            <ul class="pagination">
-                                <li class="page-item"><a class="page-link" aria-label="Previous" href="#"><span aria-hidden="true">«</span></a></li>
-                                <li class="page-item"><a class="page-link" href="#">1</a></li>
-                                <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                <li class="page-item"><a class="page-link" href="#">4</a></li>
-                                <li class="page-item"><a class="page-link" href="#">5</a></li>
-                                <li class="page-item"><a class="page-link" aria-label="Next" href="#"><span aria-hidden="true">»</span></a></li>
-                            </ul>
-                        </nav>
+                    <div class="col-md-6 align-self-center">
+                        <p id="dataTable_info" class="dataTables_info" role="status" aria-live="polite">
+                            Showing <?php echo $start + 1; ?> to <?php echo min($start + $limit, $totalRecords); ?> of <?php echo $totalRecords; ?> entries
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <?php
+                        $totalPages = ceil($totalRecords / $limit); // Move this line here
+
+                        if ($totalPages > 1) {
+                        ?>
+                            <nav class="d-lg-flex justify-content-lg-end dataTables_paginate paging_simple_numbers">
+                                <ul class="pagination">
+                                    <?php if ($page > 1): ?>
+                                        <li class="page-item"><a class="page-link" href="?page=<?php echo $page - 1; ?>" aria-label="Previous"><span aria-hidden="true">&laquo; Previous</span></a></li>
+                                    <?php endif; ?>
+
+                                    <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                        <li class="page-item <?php echo ($page == $i) ? 'active' : ''; ?>">
+                                            <a class="page-link" href="?page=<?php echo $i; ?>"><?php echo $i; ?></a>
+                                        </li>
+                                    <?php endfor; ?>
+
+                                    <?php if ($page < $totalPages): ?>
+                                        <li class="page-item"><a class="page-link" href="?page=<?php echo $page + 1; ?>" aria-label="Next"><span aria-hidden="true">Next &raquo;</span></a></li>
+                                    <?php endif; ?>
+                                </ul>
+                            </nav>
+                        <?php } ?>
                     </div>
                 </div>
-            </div>
             <?php else: ?>
                         <p>No announcements available.</p>
                     <?php endif; ?>
                 <?php else: ?>
                     <p>Error: Resident not found.</p>
                 <?php endif; ?>
-            <footer class="bg-white sticky-footer">
+
+        </div><a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a>
+        <footer class="bg-white sticky-footer">
                 <div class="container my-auto">
                     <div class="text-center my-auto copyright"><span>Copyright © Kemuncak Shah Alam 2024</span></div>
                 </div>
             </footer>
-        </div><a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a>
     </div>
     <script src="../assets/bootstrap/js/bootstrap.min.js"></script>
     <script src="../assets/js/bs-init.js"></script>

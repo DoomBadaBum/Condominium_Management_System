@@ -42,12 +42,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
+// Pagination variables
+$itemsPerPage = 5;
+$currentpage = isset($_GET['page']) ? $_GET['page'] : 1;
+$startItem = ($currentpage - 1) * $itemsPerPage;
+$totalMaintenanceRequests = 0;
+
 // Fetch maintenance requests for the worker
 $maintenanceRequestsSql = "SELECT maintenance_request.request_id, maintenance_request.description, maintenance_request.status, category.category_name AS category, maintenance_request.location, maintenance_request.urgency, maintenance_request.request_date, maintenance_request.completion_date
                           FROM maintenance_request
                           JOIN category ON maintenance_request.category_id = category.category_id
                           WHERE maintenance_request.Status IN ('Pending', 'In Progress')
-                          ORDER BY maintenance_request.request_date DESC";
+                          ORDER BY maintenance_request.status = 'In Progress' DESC,
+                                   maintenance_request.urgency = 'High' DESC,
+                                   maintenance_request.request_date DESC";
+
+$maintenanceRequestsResult = $conn->query($maintenanceRequestsSql);
+
+if ($maintenanceRequestsResult === false) {
+    die("Error executing maintenance requests query: " . $conn->error);
+}
+
+$totalMaintenanceRequests = $maintenanceRequestsResult->num_rows;
+$totalPages = ceil($totalMaintenanceRequests / $itemsPerPage);
+
+// Limit the results based on pagination
+$maintenanceRequestsSql .= " LIMIT $startItem, $itemsPerPage";
 
 $maintenanceRequestsResult = $conn->query($maintenanceRequestsSql);
 
@@ -105,8 +125,10 @@ $conn->close();
                     <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fa fa-home"></i>Unit</a>
                         <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_unit.php"><span>View Unit</span></a><a class="dropdown-item" href="add_unit.php"><span>Add Unit</span></a></div>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="view_booking.php"><i class="fas fa-table"></i><span>Facility Booking</span></a></li>
-                    <li class="nav-item"><a class="nav-link" href="register.html"><i class="fa fa-power-off"></i><span>Logout</span></a></li>
+                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fas fa-table"></i>Booking Facility</a>
+                        <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_booking.php"><span>View Booking Facility</span></a><a class="dropdown-item" href="add_booking_facility.php"><span>Add Booking Facility</span></a></div>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="logout_worker.php"><i class="fa fa-power-off"></i><span>Logout</span></a></li>
                     <li class="nav-item"></li>
                     <li class="nav-item"></li>
                 </ul>
@@ -168,7 +190,7 @@ $conn->close();
                                                     <select name="status" required>
                                                             <option value="Completed" selected="">Completed</option>
                                                             <option value="Not Completed">Not Completed</option>
-                                                    </select><br><br><input class="btn btn-primary" type="submit" value="Update Progress"></td>
+                                                    </select><br><br><input class="btn btn-warning" type="submit" value="Update Progress"></td>
                                             </form>
                                             <?php endif; ?>
                                         </tr>
@@ -184,16 +206,36 @@ $conn->close();
                             </div>
                             <div class="row">
                                 <div class="col-md-6 align-self-center">
-                                    <p id="dataTable_info" class="dataTables_info" role="status" aria-live="polite">Showing 1 to 10 of 27</p>
+                                    <p id="dataTable_info" class="dataTables_info" role="status" aria-live="polite">
+                                        Showing <?php echo $startItem + 1; ?> to <?php echo min($startItem + $itemsPerPage, $totalMaintenanceRequests); ?> of <?php echo $totalMaintenanceRequests; ?>
+                                    </p>
                                 </div>
                                 <div class="col-md-6">
                                     <nav class="d-lg-flex justify-content-lg-end dataTables_paginate paging_simple_numbers">
                                         <ul class="pagination">
-                                            <li class="page-item disabled"><a class="page-link" aria-label="Previous" href="#"><span aria-hidden="true">«</span></a></li>
-                                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                            <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                            <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                            <li class="page-item"><a class="page-link" aria-label="Next" href="#"><span aria-hidden="true">»</span></a></li>
+                                            <?php if ($totalPages > 1): ?>
+                                                <?php if ($currentpage > 1): ?>
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?page=<?php echo $currentpage - 1; ?>" aria-label="Previous">
+                                                            <span aria-hidden="true">&laquo; Previous</span>
+                                                        </a>
+                                                    </li>
+                                                <?php endif; ?>
+
+                                                <?php for ($page = 1; $page <= $totalPages; $page++): ?>
+                                                    <li class="page-item <?php echo ($page == $currentpage) ? 'active' : ''; ?>">
+                                                        <a class="page-link" href="?page=<?php echo $page; ?>"><?php echo $page; ?></a>
+                                                    </li>
+                                                <?php endfor; ?>
+
+                                                <?php if ($currentpage < $totalPages): ?>
+                                                    <li class="page-item">
+                                                        <a class="page-link" href="?page=<?php echo $currentpage + 1; ?>" aria-label="Next">
+                                                            <span aria-hidden="true">Next &raquo;</span>
+                                                        </a>
+                                                    </li>
+                                                <?php endif; ?>
+                                            <?php endif; ?>
                                         </ul>
                                     </nav>
                                 </div>

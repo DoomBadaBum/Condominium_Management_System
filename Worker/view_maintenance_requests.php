@@ -36,6 +36,22 @@ if ($maintenanceRequestsResult === false) {
     die("Error executing maintenance requests query: " . $conn->error);
 }
 
+// Pagination variables
+$resultsPerPage = 5;
+$totalMaintenanceRequests = $maintenanceRequestsResult->num_rows;
+$totalPages = ceil($totalMaintenanceRequests / $resultsPerPage);
+$currentpage = isset($_GET['page']) ? $_GET['page'] : 1;
+$startItem = ($currentpage - 1) * $resultsPerPage + 1;
+$endItem = min($startItem + $resultsPerPage - 1, $totalMaintenanceRequests);
+
+// Fetch maintenance requests for the current page
+$maintenanceRequestsSql .= " LIMIT " . ($currentpage - 1) * $resultsPerPage . ", $resultsPerPage";
+$maintenanceRequestsResult = $conn->query($maintenanceRequestsSql);
+
+if ($maintenanceRequestsResult === false) {
+    die("Error executing maintenance requests query: " . $conn->error);
+}
+
 $conn->close();
 ?>
 
@@ -84,8 +100,10 @@ $conn->close();
                     <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fa fa-home"></i>Unit</a>
                         <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_unit.php"><span>View Unit</span></a><a class="dropdown-item" href="add_unit.php"><span>Add Unit</span></a></div>
                     </li>
-                    <li class="nav-item"><a class="nav-link" href="view_booking.php"><i class="fas fa-table"></i><span>Facility Booking</span></a></li>
-                    <li class="nav-item"><a class="nav-link" href="register.html"><i class="fa fa-power-off"></i><span>Logout</span></a></li>
+                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fas fa-table"></i>Booking Facility</a>
+                        <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_booking.php"><span>View Booking Facility</span></a><a class="dropdown-item" href="add_booking_facility.php"><span>Add Booking Facility</span></a></div>
+                    </li>
+                    <li class="nav-item"><a class="nav-link" href="logout_worker.php"><i class="fa fa-power-off"></i><span>Logout</span></a></li>
                     <li class="nav-item"></li>
                     <li class="nav-item"></li>
                 </ul>
@@ -147,21 +165,41 @@ $conn->close();
                                 </table>
                             </div>
                             <div class="row">
-                                <div class="col-md-6 align-self-center">
-                                    <p id="dataTable_info" class="dataTables_info" role="status" aria-live="polite">Showing 1 to 10 of 27</p>
-                                </div>
-                                <div class="col-md-6">
-                                    <nav class="d-lg-flex justify-content-lg-end dataTables_paginate paging_simple_numbers">
-                                        <ul class="pagination">
-                                            <li class="page-item disabled"><a class="page-link" aria-label="Previous" href="#"><span aria-hidden="true">«</span></a></li>
-                                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                            <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                            <li class="page-item"><a class="page-link" href="#">3</a></li>
-                                            <li class="page-item"><a class="page-link" aria-label="Next" href="#"><span aria-hidden="true">»</span></a></li>
-                                        </ul>
-                                    </nav>
-                                </div>
-                            </div>
+        <div class="col-md-6 align-self-center">
+            <p id="dataTable_info" class="dataTables_info" role="status" aria-live="polite">
+                Showing <?php echo $startItem; ?> to <?php echo $endItem; ?> of <?php echo $totalMaintenanceRequests; ?>
+            </p>
+        </div>
+        <div class="col-md-6">
+            <nav class="d-lg-flex justify-content-lg-end dataTables_paginate paging_simple_numbers">
+                <ul class="pagination">
+                    <?php if ($totalPages > 1): ?>
+                        <?php if ($currentpage > 1): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<?php echo $currentpage - 1; ?>" aria-label="Previous">
+                                    <span aria-hidden="true">&laquo; Previous</span>
+                                </a>
+                            </li>
+                        <?php endif; ?>
+
+                        <?php for ($page = 1; $page <= $totalPages; $page++): ?>
+                            <li class="page-item <?php echo ($page == $currentpage) ? 'active' : ''; ?>">
+                                <a class="page-link" href="?page=<?php echo $page; ?>"><?php echo $page; ?></a>
+                            </li>
+                        <?php endfor; ?>
+
+                        <?php if ($currentpage < $totalPages): ?>
+                            <li class="page-item">
+                                <a class="page-link" href="?page=<?php echo $currentpage + 1; ?>" aria-label="Next">
+                                    <span aria-hidden="true">Next &raquo;</span>
+                                </a>
+                            </li>
+                        <?php endif; ?>
+                    <?php endif; ?>
+                </ul>
+            </nav>
+        </div>
+    </div>
                         </div>
                     </div>
                 </div>

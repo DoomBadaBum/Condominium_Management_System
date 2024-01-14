@@ -1,21 +1,19 @@
-<!-- assign_maintenance.php -->
 <?php
+include '../include/connection.php';
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 session_start();
 
+// Check if the user is authenticated
 if (!isset($_SESSION["user_id"])) {
     header("Location: login_worker.php");
     exit();
 }
 
-include '../include/connection.php';
-
 $userId = $_SESSION["user_id"];
 $sql = "SELECT * FROM user WHERE user_id = $userId";
 $result = $conn->query($sql);
-
-if ($result === false) {
-    die("Error executing user query: " . $conn->error);
-}
 
 if ($result->num_rows == 1) {
     $user = $result->fetch_assoc();
@@ -23,51 +21,49 @@ if ($result->num_rows == 1) {
     $user = null;
 }
 
-// Fetch pending maintenance requests
-$maintenanceRequestsSql = "SELECT maintenance_request.request_id, maintenance_request.description, maintenance_request.status, category.category_name AS category, maintenance_request.location, maintenance_request.urgency, maintenance_request.request_date
-                          FROM maintenance_request
-                          JOIN category ON maintenance_request.category_id = category.category_id
-                          WHERE maintenance_request.Status = 'Pending'
-                          ORDER BY maintenance_request.status = 'Pending' DESC,
-                          maintenance_request.urgency = 'High' DESC,
-                          maintenance_request.request_date DESC";
-
-$maintenanceRequestsResult = $conn->query($maintenanceRequestsSql);
-
-if ($maintenanceRequestsResult === false) {
-    die("Error executing maintenance requests query: " . $conn->error);
+// Check if the booking_id is set in the URL
+if (!isset($_GET['booking_id'])) {
+    header("Location: view_bookings.php");
+    exit();
 }
 
-// Pagination variables
-$itemsPerPage = 5; // Number of items per page
-$totalMaintenanceRequests = $maintenanceRequestsResult->num_rows;
-$totalPages = ceil($totalMaintenanceRequests / $itemsPerPage);
-$currentpage = isset($_GET['page']) ? $_GET['page'] : 1;
-$offset = ($currentpage - 1) * $itemsPerPage;
+$bookingId = $_GET['booking_id'];
 
-// Modify the SQL query to include LIMIT and OFFSET
-$maintenanceRequestsSql .= " LIMIT $itemsPerPage OFFSET $offset";
+// Fetch booking details
+$sqlBookingDetails = "SELECT b.booking_id, u.fullname AS resident_name, u.user_id AS resident_id, f.facility_name, b.booking_date, b.start_time, b.end_time, b.facility_id
+                        FROM booking b
+                        JOIN user u ON b.user_id = u.user_id
+                        JOIN facility f ON b.facility_id = f.facility_id
+                        WHERE b.booking_id = $bookingId
+                        ";
+$resultBookingDetails = $conn->query($sqlBookingDetails);
 
-$maintenanceRequestsResult = $conn->query($maintenanceRequestsSql);
-
-if ($maintenanceRequestsResult === false) {
-    die("Error executing maintenance requests query: " . $conn->error);
+if ($resultBookingDetails === false) {
+    die("Error executing booking details query: " . $conn->error);
 }
 
-// Handle form submission for assigning maintenance requests
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $requestId = $_POST["request_id"];
+if ($resultBookingDetails->num_rows == 1) {
+    $bookingDetails = $resultBookingDetails->fetch_assoc();
+} else {
+    // Redirect if booking not found
+    header("Location: view_bookings.php");
+    exit();
+}
 
-    // Update the status of the maintenance request to 'In Progress' and record assignment details
-    $updateStatusSql = "UPDATE maintenance_request SET status = 'In Progress', assigned_worker_id = $userId, assignment_date = NOW() WHERE request_id = $requestId";
+// Fetch all residents for the dropdown (role_id = 2)
+$sqlResidents = "SELECT user_id, fullname FROM user WHERE role_id = 2";
+$resultResidents = $conn->query($sqlResidents);
 
-    if ($conn->query($updateStatusSql) === TRUE) {
-        echo '<script>alert("Maintenance request assigned successfully!");</script>';
-        echo '<script>window.location.href = "view_maintenance_requests.php";</script>';
-        exit();
-    } else {
-        echo "Error updating maintenance request status: " . $conn->error;
-    }
+if ($resultResidents === false) {
+    die("Error executing residents query: " . $conn->error);
+}
+
+// Fetch all facilities for the dropdown
+$sqlFacilities = "SELECT facility_id, facility_name FROM facility";
+$resultFacilities = $conn->query($sqlFacilities);
+
+if ($resultFacilities === false) {
+    die("Error executing facilities query: " . $conn->error);
 }
 
 $conn->close();
@@ -79,7 +75,7 @@ $conn->close();
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Maintenance</title>
+    <title>Table - Brand</title>
     <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i&amp;display=swap">
     <link rel="stylesheet" href="../assets/fonts/fontawesome-all.min.css">
@@ -89,7 +85,6 @@ $conn->close();
     <link rel="stylesheet" href="../assets/css/Lightbox-Gallery-baguetteBox.min.css">
 </head>
 
-<?php if ($user): ?>
 <body id="page-top">
     <div id="wrapper">
         <nav class="navbar align-items-start sidebar sidebar-dark accordion bg-gradient-primary p-0 navbar-dark">
@@ -100,7 +95,7 @@ $conn->close();
                 <hr class="sidebar-divider my-0">
                 <ul class="navbar-nav text-light" id="accordionSidebar">
                     <li class="nav-item"><a class="nav-link" href="dashboard_worker.php"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
-                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link active" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-tools">
+                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-tools">
                                 <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3c0-.269-.035-.53-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"></path>
                             </svg>&nbsp;Maintenance Requests</a>
                         <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="assign_maintenance.php"><span>Assign Maintenance Requests</span></a><a class="dropdown-item" href="view_maintenance_requests.php"><span>View Maintenance Requests</span></a><a class="dropdown-item" href="maintenance_requests_worker.php"><span>Update Maintenance Requests</span></a></div>
@@ -111,7 +106,7 @@ $conn->close();
                     <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fas fa-user"></i>Resident</a>
                         <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_resident.php"><span>View Resident</span></a><a class="dropdown-item" href="add_resident.php"><span>Add Resident</span></a></div>
                     </li>
-                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-building">
+                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-building-fill">
                                 <path d="M3 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3v-3.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V16h3a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1zm1 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5M4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM7.5 5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5m2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM4.5 8h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5m2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5"></path>
                             </svg>&nbsp;Facility</a>
                         <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_facility.php"><span>View Facility</span></a><a class="dropdown-item" href="add_facility.php"><span>Add Facility</span></a></div>
@@ -119,7 +114,7 @@ $conn->close();
                     <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fa fa-home"></i>Unit</a>
                         <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_unit.php"><span>View Unit</span></a><a class="dropdown-item" href="add_unit.php"><span>Add Unit</span></a></div>
                     </li>
-                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fas fa-table"></i>Booking Facility</a>
+                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link active" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fas fa-table"></i>Booking Facility</a>
                         <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_booking.php"><span>View Booking Facility</span></a><a class="dropdown-item" href="add_booking_facility.php"><span>Add Booking Facility</span></a></div>
                     </li>
                     <li class="nav-item"><a class="nav-link" href="logout_worker.php"><i class="fa fa-power-off"></i><span>Logout</span></a></li>
@@ -130,7 +125,7 @@ $conn->close();
         </nav>
         <div class="d-flex flex-column" id="content-wrapper">
             <div id="content">
-                <nav class="navbar navbar-expand bg-white shadow mb-4 topbar static-top navbar-light">
+            <nav class="navbar navbar-expand bg-white shadow mb-4 topbar static-top navbar-light">
                     <div class="container-fluid"><button class="btn btn-link d-md-none rounded-circle me-3" id="sidebarToggleTop" type="button"><i class="fas fa-bars"></i></button>
                         <ul class="navbar-nav flex-nowrap ms-auto">
                             <li class="nav-item dropdown no-arrow">
@@ -144,95 +139,70 @@ $conn->close();
                     </div>
                 </nav>
                 <div class="container-fluid">
-                    <h3 class="text-dark mb-4">Assign Maintenance Requests</h3>
+                    <h3 class="text-dark mb-4">Update Booking Facility</h3>
                     <div class="card shadow" style="margin-top: 20px;">
                         <div class="card-header py-3">
-                            <p class="text-primary m-0 fw-bold">Assign Maintenance Requests</p>
+                            <p class="text-primary m-0 fw-bold">Update Booking Facility</p>
                         </div>
                         <div class="card-body">
-                            <div class="table-responsive table mt-2" id="dataTable" role="grid" aria-describedby="dataTable_info">
-                            <?php if ($maintenanceRequestsResult->num_rows > 0): ?>
-                                <table class="table my-0" id="dataTable">
-                                    <thead>
-                                        <tr>
-                                            <th style="padding-right: 65px;width: 151.922px;margin-right: 0px;">Description</th>
-                                            <th style="width: 167.703px;">Status</th>
-                                            <th style="padding-right: 35px;width: 151.922px;margin-right: 0px;">Category</th>
-                                            <th style="width: 125px;">Location</th>
-                                            <th style="width: 157.844px;">Urgency</th>
-                                            <th style="width: 129.156px;">Request Date</th>
-                                            <th style="padding-right: 35px;width: 151.922px;margin-right: 0px;">Action</th>
-                                        </tr>
-                                    </thead>
-                                    <?php while ($row = $maintenanceRequestsResult->fetch_assoc()): ?>
-                                    <tbody>
-                                        <tr>
-                                            <td style="height: 42px;"><?php echo $row['description']; ?></td>
-                                            <td><?php echo $row['status']; ?></td>
-                                            <td><?php echo $row['category']; ?></td>
-                                            <td><?php echo $row['location']; ?></td>
-                                            <td><?php echo $row['urgency']; ?></td>
-                                            <td><?php echo $row['request_date']; ?></td>
-                                            <form method="post" action="">
-                                                <input type="hidden" name="request_id" value="<?php echo $row['request_id']; ?>">
-                                                <td><input class="btn btn-primary" type="submit" value="Assign"></td>
-                                            </form>
-                                        </tr>
-                                    </tbody>
-                                    <tfoot>
-                                        <tr></tr>
-                                    </tfoot>
-                                    <?php endwhile; ?>
-                                </table>
-                                <?php else: ?>
-                                    <p>No pending maintenance requests.</p>
-                                <?php endif; ?>
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6 align-self-center">
-                                    <?php
-                                    $startItem = ($currentpage - 1) * $itemsPerPage + 1;
-                                    $endItem = min($startItem + $itemsPerPage - 1, $totalMaintenanceRequests);
-                                    ?>
-                                    <p id="dataTable_info" class="dataTables_info" role="status" aria-live="polite">
-                                        Showing <?php echo $startItem; ?> to <?php echo $endItem; ?> of <?php echo $totalMaintenanceRequests; ?>
-                                    </p>
+                            <form action="update_booking_process.php" method="post">
+                            <input type="hidden" name="booking_id" value="<?php echo $bookingDetails['booking_id']; ?>">
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="user_id"><strong>Resident</strong></label>
+                                            <select class="form-select" id="user_id" name="user_id">
+                                                <?php while ($resident = $resultResidents->fetch_assoc()): ?>
+                                                <option value="<?php echo $resident['user_id']; ?>" <?php echo ($resident['user_id'] == $bookingDetails['resident_id']) ? 'selected' : ''; ?>>
+                                                    <?php echo $resident['fullname']; ?>
+                                                </option>
+                                                <?php endwhile; ?>
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
-                                <?php if ($totalPages > 1): ?>
-                                <div class="col-md-6">
-                                    <nav class="d-lg-flex justify-content-lg-end dataTables_paginate paging_simple_numbers">
-                                        <ul class="pagination">
-                                            <?php if ($currentpage > 1) : ?>
-                                                <li class="page-item">
-                                                    <a class="page-link" href="?page=<?php echo $currentpage - 1; ?>" aria-label="Previous">
-                                                        <span aria-hidden="true">&laquo; Previous</span>
-                                                    </a>
-                                                </li>
-                                            <?php endif; ?>
-                                            <?php for ($page = 1; $page <= $totalPages; $page++) : ?>
-                                                <li class="page-item <?php echo ($page == $currentpage) ? 'active' : ''; ?>">
-                                                    <a class="page-link" href="?page=<?php echo $page; ?>"><?php echo $page; ?></a>
-                                                </li>
-                                            <?php endfor; ?>
-                                            <?php if ($currentpage < $totalPages) : ?>
-                                                <li class="page-item">
-                                                    <a class="page-link" href="?page=<?php echo $currentpage + 1; ?>" aria-label="Next">
-                                                        <span aria-hidden="true">Next &raquo;</span>
-                                                    </a>
-                                                </li>
-                                            <?php endif; ?>
-                                        </ul>
-                                    </nav>
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="facility_id"><strong>Facility</strong></label>
+                                            <select class="form-select" id="facility_id" name="facility_id">
+                                                <?php while ($facility = $resultFacilities->fetch_assoc()): ?>
+                                                <option value="<?= $facility['facility_id'] ?>" <?= ($facility['facility_id'] == $bookingDetails['facility_id']) ? 'selected' : '' ?>>
+                                                    <?= $facility['facility_name'] ?>
+                                                </option>
+                                                <?php endwhile; ?>
+                                            </select></div>
+                                    </div>
                                 </div>
-                            </div>
-                            <?php endif; ?>
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="mb-3">
+                                        <label class="form-label" for="booking_date"><strong>Booking Date</strong></label>
+                                        <input class="form-control" type="date" id="booking_date" name="booking_date" value="<?php echo $bookingDetails['booking_date']; ?>" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="start_time"><strong>Start Time</strong></label>
+                                            <input class="form-control" type="time"  id="start_time" name="start_time" value="<?php echo $bookingDetails['start_time']; ?>" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="end_time"><strong>End Time</strong></label>
+                                            <input class="form-control" type="time" id="end_time" name="end_time" value="<?php echo $bookingDetails['end_time']; ?>" required>                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-3"><button class="btn btn-warning btn-sm" type="submit">Update Booking Facility</button></div>
+                            </form>
                         </div>
                     </div>
                 </div>
             </div>
-            <?php else: ?>
-                <p>Error: Worker not found.</p>
-            <?php endif; ?>
             <footer class="bg-white sticky-footer">
                 <div class="container my-auto">
                     <div class="text-center my-auto copyright"><span>Copyright © Kemuncak Shah Alam 2024</span></div>
@@ -246,4 +216,5 @@ $conn->close();
     <script src="../assets/js/Lightbox-Gallery.js"></script>
     <script src="../assets/js/theme.js"></script>
 </body>
+
 </html>
