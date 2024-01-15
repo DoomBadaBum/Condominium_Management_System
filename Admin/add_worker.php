@@ -37,7 +37,7 @@ $newUserId = $maxUserId + 1;
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = $_POST["username"];
     $password = $_POST["password"];
-    $role_id = 2; // Assuming role_id 2 corresponds to the "Resident" role
+    $role_id = 3; // Assuming role_id 3 corresponds to the "Worker" role
     $fullname = $_POST["fullname"];
     $email = $_POST["email"];
     $phone_number = $_POST["phone_number"];
@@ -101,7 +101,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                           VALUES ($newUserId, '$username', '$password', $role_id, '$fullname', '$email', '$phone_number', '$ic_number', '$emergency_contact', $unit_id, '$profilePicFileName', '$gender', '$age')";
 
     if ($conn->query($insertResidentSql) === TRUE) {
-        echo '<script>alert("Resident added successfully!");</script>';
+        echo '<script>alert("Worker added successfully!");</script>';
         echo '<script>window.location.href = "view_resident.php";</script>';
     } else {
         // Display the SQL error
@@ -203,15 +203,15 @@ $conn->close();
                     </div>
                 </nav>
                 <div class="container">
-                    <h3 class="text-dark mb-4">Add Resident</h3>
+                    <h3 class="text-dark mb-4">Add Worker</h3>
                     <div class="row">
                         <div class="col">
                             <div class="card shadow mb-3">
                                 <div class="card-header py-3">
-                                    <p class="text-primary m-0 fw-bold">Add Resident</p>
+                                    <p class="text-primary m-0 fw-bold">Add Worker</p>
                                 </div>
                                 <div class="card-body">
-                                    <form action="add_resident.php" method="post" enctype="multipart/form-data">
+                                    <form action="add_worker.php" method="post" enctype="multipart/form-data">
                                         <div class="row">
                                             <div class="col">
                                                 <div class="mb-3"><label class="form-label" for="username"><strong>Username</strong></label><input class="form-control"id="username" name="username" placeholder="username" required></div>
@@ -261,14 +261,14 @@ $conn->close();
                                                 <div class="mb-3"><label class="form-label" for="emergency_contact"><strong>Emergency Contact</strong></label><input class="form-control" type="text" id="emergency_contact" name="emergency_contact" placeholder="Emergency Contact" required></div>
                                             </div>
                                         </div>
-                                        <div class="row">
+                                        <!--<div class="row">
                                             <div class="col">
                                                 <div class="mb-3"><label class="form-label" for="profile_pic"><strong>Profile Picture</strong></label>
                                                 <input class="form-control" type="file" name="profile_pic" id="profile_pic" accept="image/*"></div>
                                             </div>
-                                        </div>
+                                        </div> -->
                                         <div class="mb-3">
-                                            <input class="btn btn-primary btn-sm" type="submit" value="Add Resident">
+                                            <input class="btn btn-primary btn-sm" type="submit" value="Add Worker">
                                         </div>
                                     </form>
                                 </div>

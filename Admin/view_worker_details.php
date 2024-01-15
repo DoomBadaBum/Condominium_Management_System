@@ -1,17 +1,35 @@
 <?php
 include '../include/connection.php';
-
 session_start();
 
-// Check if the user is authenticated and has admin privileges
+// Check if the user is authenticated
 if (!isset($_SESSION["user_id"])) {
-    header("Location: login_admin.php");
+    header("Location: login.php");
     exit();
 }
 
-$userId = $_SESSION["user_id"];
-$sql = "SELECT * FROM user WHERE user_id = $userId";
+// Fetch user worker details
+$sqlUser = "SELECT * FROM user WHERE user_id = " . $_SESSION["user_id"];
+$resultUser = $conn->query($sqlUser);
+
+if ($resultUser === false) {
+    die("Error executing user query: " . $conn->error);
+}
+
+$userWork = $resultUser->fetch_assoc();
+
+// Get user_id from the URL
+$user_id = $_GET['user_id'];
+$sql = "SELECT u.*, r.unit_number, r.block_number, r.floor, r.size
+        FROM user u
+        LEFT JOIN unit r ON u.unit_id = r.unit_id
+        WHERE u.user_id = $user_id";
+
 $result = $conn->query($sql);
+
+if ($result === false) {
+    die("Error executing user query: " . $conn->error);
+}
 
 if ($result->num_rows == 1) {
     $user = $result->fetch_assoc();
@@ -19,109 +37,9 @@ if ($result->num_rows == 1) {
     $user = null;
 }
 
-// Fetch the current maximum user_id from the user table
-$sqlMaxUserId = "SELECT MAX(user_id) AS max_user_id FROM user";
-$resultMaxUserId = $conn->query($sqlMaxUserId);
-
-if ($resultMaxUserId === false) {
-    die("Error getting max user_id: " . $conn->error);
-}
-
-$maxUserIdRow = $resultMaxUserId->fetch_assoc();
-$maxUserId = $maxUserIdRow['max_user_id'];
-
-// Increment the max user_id to get a new user_id
-$newUserId = $maxUserId + 1;
-
-// Perform resident insertion when the form is submitted
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $username = $_POST["username"];
-    $password = $_POST["password"];
-    $role_id = 2; // Assuming role_id 2 corresponds to the "Resident" role
-    $fullname = $_POST["fullname"];
-    $email = $_POST["email"];
-    $phone_number = $_POST["phone_number"];
-    $ic_number = $_POST["ic_number"];
-    $emergency_contact = $_POST["emergency_contact"];
-    $unit_id = $_POST["unit_id"];
-    $gender = $_POST["gender"];
-    $age = $_POST["age"];
-
-
-    // Handle image upload
-    $target_dir = "../profile_pics/";
-    $target_file = $target_dir . basename($_FILES["profile_pic"]["name"]);
-    $uploadOk = 1;
-    $imageFileType = strtolower(pathinfo($target_file, PATHINFO_EXTENSION));
-
-    // Check if image file is a actual image or fake image
-    if(isset($_POST["submit"])) {
-        $check = getimagesize($_FILES["profile_pic"]["tmp_name"]);
-        if($check !== false) {
-            echo "File is an image - " . $check["mime"] . ".";
-            $uploadOk = 1;
-        } else {
-            echo "File is not an image.";
-            $uploadOk = 0;
-        }
-    }
-
-    if (file_exists($target_file)) {
-        echo "Sorry, file already exists.";
-        $uploadOk = 0;
-    }
-
-    // Check file size
-    if ($_FILES["profile_pic"]["size"] > 500000) {
-        echo "Sorry, your file is too large.";
-        $uploadOk = 0;
-    }
-
-    // Allow certain file formats
-    if ($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
-        && $imageFileType != "gif") {
-        echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
-        $uploadOk = 0;
-    }
-    // Check if $uploadOk is set to 0 by an error
-    if ($uploadOk == 0) {
-        echo "Sorry, your file was not uploaded.";
-    // if everything is ok, try to upload file
-    } else {
-        if (move_uploaded_file($_FILES["profile_pic"]["tmp_name"], $target_file)) {
-            echo "The file ". basename( $_FILES["profile_pic"]["name"]). " has been uploaded.";
-        } else {
-            echo "Sorry, there was an error uploading your file.";
-        }
-    }
-
-    // Insert resident into the database with the new user_id and profile picture file name
-    $profilePicFileName = basename($_FILES["profile_pic"]["name"]);
-    $insertResidentSql = "INSERT INTO user (user_id, username, password, role_id, fullname, email, phone_number, ic_number, emergency_contact, unit_id, profile_pic, gender, age)
-                          VALUES ($newUserId, '$username', '$password', $role_id, '$fullname', '$email', '$phone_number', '$ic_number', '$emergency_contact', $unit_id, '$profilePicFileName', '$gender', '$age')";
-
-    if ($conn->query($insertResidentSql) === TRUE) {
-        echo '<script>alert("Resident added successfully!");</script>';
-        echo '<script>window.location.href = "view_resident.php";</script>';
-    } else {
-        // Display the SQL error
-        echo "Error: " . $insertResidentSql . "<br>" . $conn->error;
-    }
-}
-
-// Fetch units for the dropdown
-$unitOptions = '';
-$sql = "SELECT unit_id, unit_number FROM unit";
-$result = $conn->query($sql);
-
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $unitOptions .= '<option value="' . $row['unit_id'] . '">' . $row['unit_number'] . '</option>';
-    }
-}
-
 $conn->close();
 ?>
+
 
 <!DOCTYPE html>
 <html data-bs-theme="light" lang="en">
@@ -131,12 +49,13 @@ $conn->close();
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
     <title>Profile - Brand</title>
     <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i&amp;display=swap">
+    <link rel="stylesheet" href="../https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i&amp;display=swap">
     <link rel="stylesheet" href="../assets/fonts/fontawesome-all.min.css">
     <link rel="stylesheet" href="../assets/fonts/font-awesome.min.css">
     <link rel="stylesheet" href="../assets/fonts/typicons.min.css">
     <link rel="stylesheet" href="../assets/fonts/fontawesome5-overrides.min.css">
     <link rel="stylesheet" href="../assets/css/Lightbox-Gallery-baguetteBox.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.css" />
 </head>
 
 <body id="page-top">
@@ -182,96 +101,98 @@ $conn->close();
             <nav class="navbar navbar-expand bg-white shadow mb-4 topbar static-top navbar-light">
                     <div class="container-fluid"><button class="btn btn-link d-md-none rounded-circle me-3" id="sidebarToggleTop" type="button"><i class="fas fa-bars"></i></button>
                         <ul class="navbar-nav flex-nowrap ms-auto">
-                            <li class="nav-item dropdown d-sm-none no-arrow"><a class="dropdown-toggle nav-link" aria-expanded="false" data-bs-toggle="dropdown" href="#"><i class="fas fa-search"></i></a>
-                                <div class="dropdown-menu dropdown-menu-end p-3 animated--grow-in" aria-labelledby="searchDropdown">
-                                    <form class="me-auto navbar-search w-100">
-                                        <div class="input-group"><input class="bg-light form-control border-0 small" type="text" placeholder="Search for ...">
-                                            <div class="input-group-append"><button class="btn btn-primary py-0" type="button"><i class="fas fa-search"></i></button></div>
-                                        </div>
-                                    </form>
-                                </div>
-                            </li>
-                            
                             <li class="nav-item dropdown no-arrow">
-                                <div class="nav-item dropdown no-arrow"><a class="dropdown-toggle nav-link" aria-expanded="false" data-bs-toggle="dropdown" href="#"><span class="d-none d-lg-inline me-2 text-gray-600 small"><?php echo $user['fullname']; ?></span><!--<img class="border rounded-circle img-profile" src="assets/img/avatars/avatar1.jpeg">--></a>
-                                    <div class="dropdown-menu shadow dropdown-menu-end animated--grow-in"><!--<a class="dropdown-item" href="#"><i class="fas fa-user fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Profile</a><a class="dropdown-item" href="#"><i class="fas fa-cogs fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Settings</a><a class="dropdown-item" href="#"><i class="fas fa-list fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Activity log</a>-->
-                                        <!--<div class="dropdown-divider"></div>--><a class="dropdown-item" href="logout_worker.php"><i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Logout</a>
+                                <div class="nav-item dropdown no-arrow"><a class="dropdown-toggle nav-link" aria-expanded="false" data-bs-toggle="dropdown" href="#"><span class="d-none d-lg-inline me-2 text-gray-600 small"><?php echo $userWork['fullname']; ?></span>
+                                <!--<img class="border rounded-circle img-profile" src="assets/img/avatars/avatar1.jpeg">--></a>
+                                    <div class="dropdown-menu shadow dropdown-menu-end animated--grow-in">
+                                        <a class="dropdown-item" href="logout_worker.php"><i class="fas fa-sign-out-alt fa-sm fa-fw me-2 text-gray-400"></i>&nbsp;Logout</a>
                                     </div>
                                 </div>
                             </li>
                         </ul>
                     </div>
                 </nav>
-                <div class="container">
-                    <h3 class="text-dark mb-4">Add Resident</h3>
-                    <div class="row">
+                <div class="container-fluid">
+                    <h3 class="text-dark mb-4">View Resident Details</h3>
+                    <div class="row" style="margin-right: 327px;margin-left: 352px;">
                         <div class="col">
-                            <div class="card shadow mb-3">
-                                <div class="card-header py-3">
-                                    <p class="text-primary m-0 fw-bold">Add Resident</p>
-                                </div>
-                                <div class="card-body">
-                                    <form action="add_resident.php" method="post" enctype="multipart/form-data">
+                            <div class="card mb-3">
+                            <div class="card-body text-center shadow">
+                                    <?php if (!empty($user['profile_pic'])): ?>
+                                        <a data-fancybox="profile-picture" href="../profile_pics/<?php echo $user['profile_pic']; ?>">
+                                            <img class="rounded-circle mb-3 mt-4" src="../profile_pics/<?php echo $user['profile_pic']; ?>" alt="Current Profile Picture" width="140" height="140">
+                                        </a>
+                                    <?php else: ?>
+                                        <a data-fancybox="profile-picture" href="../profile_pics/no-user.png">
+                                            <img class="rounded-circle mb-3 mt-4" src="../profile_pics/no-user.png" alt="Current Profile Picture" width="50">
+                                        </a>
+                                    <?php endif; ?>
+                                    <!--<img class="rounded-circle mb-3 mt-4" src="../assets/img/dogs/image2.jpeg" width="160" height="160">-->
+                                </div>                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="container">
+                <div class="row">
+                    <div class="col">
+                        <div class="card shadow mb-3">
+                            <div class="card-header py-3">
+                                <p class="text-primary m-0 fw-bold">Resident Details</p>
+                            </div>
+                            <div class="card-body">
+                                <form action="update_profile.php" method="post" enctype="multipart/form-data">
                                         <div class="row">
                                             <div class="col">
-                                                <div class="mb-3"><label class="form-label" for="username"><strong>Username</strong></label><input class="form-control"id="username" name="username" placeholder="username" required></div>
+                                                <div class="mb-3"><label class="form-label" for="username"><strong>Username</strong></label><input class="form-control" type="text" id="username" placeholder="user.name" name="username" value="<?php echo $user['username']; ?>" readonly></div>
                                             </div>
                                             <div class="col">
-                                                <div class="mb-3"><label class="form-label" for="password"><strong>Password</strong></label><input class="form-control" id="password" name="password" placeholder="Password" required></div>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col">
-                                                <div class="mb-3"><label class="form-label" for="fullname"><strong>Full Name</strong></label><input class="form-control" type="text" id="fullname" name="fullname" placeholder="Fullname" required></div>
-                                            </div>
-                                            <div class="col">
-                                                <div class="mb-3"><label class="form-label" for="email"><strong>Email</strong></label><input class="form-control" type="email" id="email" name="email" placeholder="Email" required></div>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col">
-                                                <div class="mb-3"><label class="form-label" for="age"><strong>Age</strong></label><input class="form-control" type="text" id="age" name="age" placeholder="Age" required></div>
-                                            </div>
-                                            <div class="col">
-                                                <div class="mb-3"><label class="form-label" for="gender"><strong>Gender</strong></label>
-                                                    <select  class="form-select" id="gender" name="gender" required>
-                                                        <option value="Male">Male</option>
-                                                        <option value="Female">Female</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col">
-                                                <div class="mb-3"><label class="form-label" for="ic_number"><strong>IC&nbsp;Number</strong></label><input minlength="14" maxlength="14" class="form-control" type="text" id="ic_number" name="ic_number" placeholder="IC Number" required></div>
-                                            </div>
-                                            <div class="col">
-                                                <div class="mb-3"><label class="form-label" for="phone_number"><strong>Phone Number</strong></label><input class="form-control" type="text" id="phone_number" name="phone_number" placeholder="Phone Number" required></div>
+                                                <div class="mb-3"><label class="form-label" for="email"><strong>Email Address</strong></label><input class="form-control" type="email" id="email" placeholder="user@example.com" name="email" value="<?php echo $user['email']; ?>" readonly></div>
                                             </div>
                                         </div>
                                         <div class="row">
                                             <div class="col">
-                                                <div class="mb-3"><label class="form-label" for="unit_id"><strong>Unit ID</strong></label>
-                                                    <select class="form-select" id="unit_id" name="unit_id" required>
-                                                        <?php echo $unitOptions; ?>
-                                                    </select>
-                                                </div>
+                                                <div class="mb-3"><label class="form-label" for="first_name"><strong>Full Name</strong></label><input class="form-control" type="text" id="fullname" placeholder="John" name="fullname" value="<?php echo $user['fullname']; ?>" readonly></div>
                                             </div>
                                             <div class="col">
-                                                <div class="mb-3"><label class="form-label" for="emergency_contact"><strong>Emergency Contact</strong></label><input class="form-control" type="text" id="emergency_contact" name="emergency_contact" placeholder="Emergency Contact" required></div>
+                                                <div class="mb-3"><label class="form-label" for="age"><strong>Age</strong></label><input class="form-control" type="text" id="age" placeholder="John" name="age" value="<?php echo $user['age']; ?>" readonly></div>
                                             </div>
                                         </div>
                                         <div class="row">
                                             <div class="col">
-                                                <div class="mb-3"><label class="form-label" for="profile_pic"><strong>Profile Picture</strong></label>
-                                                <input class="form-control" type="file" name="profile_pic" id="profile_pic" accept="image/*"></div>
+                                                <div class="mb-3"><label class="form-label" for="gender"><strong>Gender</strong></label><input class="form-control" type="text" id="gender" placeholder="Doe" name="gender" value="<?php echo $user['gender']; ?>" readonly></div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="last_name"><strong>Phone Number</strong></label><input class="form-control" type="text" id="phone" placeholder="Doe" name="phone" value="<?php echo $user['phone_number']; ?>" readonly></div>
                                             </div>
                                         </div>
-                                        <div class="mb-3">
-                                            <input class="btn btn-primary btn-sm" type="submit" value="Add Resident">
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="first_name"><strong>IC Number</strong></label><input class="form-control" type="text" id="ic_number" placeholder="John" name="ic_number" value="<?php echo $user['ic_number']; ?>" readonly></div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="last_name"><strong>Emergency Contact</strong></label><input class="form-control" type="text" id="emergency_contact-2" placeholder="Doe" name="emergency_contact" value="<?php echo $user['emergency_contact']; ?>" readonly></div>
+                                            </div>
                                         </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="first_name"><strong>Unit Number</strong></label><input class="form-control" type="text" id="unit_number" placeholder="John" name="unit_number" value="<?php echo $user['unit_number']; ?>" readonly></div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="last_name"><strong>Block Number</strong></label><input class="form-control" type="text" id="block_number" placeholder="Doe" name="block_number" value="<?php echo $user['block_number']; ?>" readonly></div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="first_name"><strong>Floor</strong></label><input class="form-control" type="text" id="floor" placeholder="John" name="floor" value="<?php echo $user['floor']; ?>" readonly></div>
+                                            </div>
+                                            <div class="col">
+                                                <div class="mb-3"><label class="form-label" for="last_name"><strong>Unit Size m<sup>2</sup></strong></label><input class="form-control" type="text" id="size" placeholder="Doe" name="size" value="<?php echo $user['size']; ?>" readonly></div>
+                                            </div>
+                                        </div>
+                                        
                                     </form>
-                                </div>
+                                    <div class="mb-3"><a href="view_worker.php" class="btn btn-primary btn-sm" type="submit">Back</a></div>
                             </div>
                         </div>
                     </div>
@@ -289,6 +210,23 @@ $conn->close();
     <script src="../assets/js/Lightbox-Gallery-baguetteBox.min.js"></script>
     <script src="../assets/js/Lightbox-Gallery.js"></script>
     <script src="../assets/js/theme.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/fancybox/3.5.7/jquery.fancybox.min.js"></script>
+
+    <script>
+        // Add this JavaScript code
+        $(document).ready(function () {
+            // Initialize Fancybox
+            $('[data-fancybox="gallery"]').fancybox({
+                buttons: [
+                    "zoom",
+                    "fullScreen",
+                    "close"
+                ],
+                loop: true
+            });
+        });
+    </script>
 </body>
 
 </html>
