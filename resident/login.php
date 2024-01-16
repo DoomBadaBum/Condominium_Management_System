@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header("Location: dashboard.php");
     } else {
         // Invalid credentials, redirect to login page
-        echo '<script>alert("Wrong Email or Password!");</script>';
+        echo '<script>alert("Wrong Username or Password!");</script>';
         echo '<script>window.location.href = "login.php";</script>';
     }
 }
@@ -45,7 +45,7 @@ $conn->close();
 
 </head>
 
-<body class="bg-gradient-primary" style="position: sticky;overflow: visible;transform: translateY(176px);">
+<body class="bg-gradient-primary d-flex align-items-center justify-content-center min-vh-100">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-9 col-lg-12 col-xl-10">

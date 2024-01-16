@@ -43,10 +43,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $phone_number = $_POST["phone_number"];
     $ic_number = $_POST["ic_number"];
     $emergency_contact = $_POST["emergency_contact"];
-    $unit_id = $_POST["unit_id"];
     $gender = $_POST["gender"];
     $age = $_POST["age"];
-
 
     // Handle image upload
     $target_dir = "../profile_pics/";
@@ -67,56 +65,46 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     if (file_exists($target_file)) {
-        echo "Sorry, file already exists.";
+        echo '';
         $uploadOk = 0;
     }
 
     // Check file size
-    if ($_FILES["profile_pic"]["size"] > 500000) {
-        echo "Sorry, your file is too large.";
+    if ($_FILES["profile_pic"]["size"] > 5000000) {
+        echo 'Sorry, your image file is too large.';
         $uploadOk = 0;
     }
 
     // Allow certain file formats
     if ($imageFileType != "jpg" && $imageFileType != "png" && $imageFileType != "jpeg"
         && $imageFileType != "gif") {
-        echo "Sorry, only JPG, JPEG, PNG & GIF files are allowed.";
+        echo 'Sorry, only JPG, JPEG, PNG & GIF files are allowed.';
         $uploadOk = 0;
     }
     // Check if $uploadOk is set to 0 by an error
     if ($uploadOk == 0) {
-        echo "Sorry, your file was not uploaded.";
+        echo 'Sorry, your file was not uploaded.';
     // if everything is ok, try to upload file
     } else {
         if (move_uploaded_file($_FILES["profile_pic"]["tmp_name"], $target_file)) {
             echo "The file ". basename( $_FILES["profile_pic"]["name"]). " has been uploaded.";
         } else {
-            echo "Sorry, there was an error uploading your file.";
+            echo '<script>alert("Sorry, there was an error uploading your file.");</script>';
+            echo '<script>window.location.href = "view_worker.php";</script>';
         }
     }
 
     // Insert resident into the database with the new user_id and profile picture file name
     $profilePicFileName = basename($_FILES["profile_pic"]["name"]);
-    $insertResidentSql = "INSERT INTO user (user_id, username, password, role_id, fullname, email, phone_number, ic_number, emergency_contact, unit_id, profile_pic, gender, age)
-                          VALUES ($newUserId, '$username', '$password', $role_id, '$fullname', '$email', '$phone_number', '$ic_number', '$emergency_contact', $unit_id, '$profilePicFileName', '$gender', '$age')";
+    $insertResidentSql = "INSERT INTO user (user_id, username, password, role_id, fullname, email, phone_number, ic_number, emergency_contact, profile_pic, gender, age)
+                          VALUES ($newUserId, '$username', '$password', $role_id, '$fullname', '$email', '$phone_number', '$ic_number', '$emergency_contact', '$profilePicFileName', '$gender', '$age')";
 
     if ($conn->query($insertResidentSql) === TRUE) {
-        echo '<script>alert("Worker added successfully!");</script>';
-        echo '<script>window.location.href = "view_resident.php";</script>';
+        echo '<script>alert("Staff added successfully!");</script>';
+        echo '<script>window.location.href = "view_worker.php";</script>';
     } else {
         // Display the SQL error
         echo "Error: " . $insertResidentSql . "<br>" . $conn->error;
-    }
-}
-
-// Fetch units for the dropdown
-$unitOptions = '';
-$sql = "SELECT unit_id, unit_number FROM unit";
-$result = $conn->query($sql);
-
-if ($result->num_rows > 0) {
-    while ($row = $result->fetch_assoc()) {
-        $unitOptions .= '<option value="' . $row['unit_id'] . '">' . $row['unit_number'] . '</option>';
     }
 }
 
@@ -149,27 +137,8 @@ $conn->close();
                 <hr class="sidebar-divider my-0">
                 <ul class="navbar-nav text-light" id="accordionSidebar">
                     <li class="nav-item"><a class="nav-link" href="dashboard_admin.php"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></a></li>
-                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-tools">
-                                <path d="M1 0 0 1l2.2 3.081a1 1 0 0 0 .815.419h.07a1 1 0 0 1 .708.293l2.675 2.675-2.617 2.654A3.003 3.003 0 0 0 0 13a3 3 0 1 0 5.878-.851l2.654-2.617.968.968-.305.914a1 1 0 0 0 .242 1.023l3.27 3.27a.997.997 0 0 0 1.414 0l1.586-1.586a.997.997 0 0 0 0-1.414l-3.27-3.27a1 1 0 0 0-1.023-.242L10.5 9.5l-.96-.96 2.68-2.643A3.005 3.005 0 0 0 16 3c0-.269-.035-.53-.102-.777l-2.14 2.141L12 4l-.364-1.757L13.777.102a3 3 0 0 0-3.675 3.68L7.462 6.46 4.793 3.793a1 1 0 0 1-.293-.707v-.071a1 1 0 0 0-.419-.814zm9.646 10.646a.5.5 0 0 1 .708 0l2.914 2.915a.5.5 0 0 1-.707.707l-2.915-2.914a.5.5 0 0 1 0-.708M3 11l.471.242.529.026.287.445.445.287.026.529L5 13l-.242.471-.026.529-.445.287-.287.445-.529.026L3 15l-.471-.242L2 14.732l-.287-.445L1.268 14l-.026-.529L1 13l.242-.471.026-.529.445-.287.287-.445.529-.026z"></path>
-                            </svg>&nbsp;Maintenance Requests</a>
-                        <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="assign_maintenance.php"><span>Assign Maintenance Requests</span></a><a class="dropdown-item" href="view_maintenance_requests.php"><span>View Maintenance Requests</span></a><a class="dropdown-item" href="maintenance_requests_worker.php"><span>Update Maintenance Requests</span></a></div>
-                    </li>
-                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fas fa-window-maximize"></i>Announcements</a>
-                        <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="announcements.php"><span>View Announcements</span></a><a class="dropdown-item" href="add_announcement.php"><span>Add Announcements</span></a></div>
-                    </li>
-                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link active" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fas fa-user"></i>Worker</a>
-                        <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_worker.php"><span>View Worker</span></a><a class="dropdown-item" href="add_worker.php"><span>Add Worker</span></a></div>
-                    </li>
-                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" fill="currentColor" viewBox="0 0 16 16" class="bi bi-building-fill">
-                                <path d="M3 0a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h3v-3.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5V16h3a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1zm1 2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3 0a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5M4 5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM7.5 5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5m2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zM4.5 8h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5m2.5.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5zm3.5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5"></path>
-                            </svg>&nbsp;Facility</a>
-                        <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_facility.php"><span>View Facility</span></a><a class="dropdown-item" href="add_facility.php"><span>Add Facility</span></a></div>
-                    </li>
-                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fa fa-home"></i>Unit</a>
-                        <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_unit.php"><span>View Unit</span></a><a class="dropdown-item" href="add_unit.php"><span>Add Unit</span></a></div>
-                    </li>
-                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fas fa-table"></i>Booking Facility</a>
-                        <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_booking.php"><span>View Booking Facility</span></a><a class="dropdown-item" href="add_booking_facility.php"><span>Add Booking Facility</span></a></div>
+                    <li class="nav-item dropdown show"><a class="dropdown-toggle nav-link active" aria-expanded="true" data-bs-toggle="dropdown" href="#" style="color: rgb(255,255,255);"><i class="fas fa-user"></i>Staff</a>
+                        <div class="dropdown-menu" data-bs-popper="none"><a class="dropdown-item" href="view_worker.php"><span>View Staff</span></a><a class="dropdown-item" href="add_worker.php"><span>Add Staff</span></a></div>
                     </li>
                     <li class="nav-item"><a class="nav-link" href="logout_admin.php"><i class="fa fa-power-off"></i><span>Logout</span></a></li>
                     <li class="nav-item"></li>
@@ -203,12 +172,12 @@ $conn->close();
                     </div>
                 </nav>
                 <div class="container">
-                    <h3 class="text-dark mb-4">Add Worker</h3>
+                    <h3 class="text-dark mb-4">Add Staff</h3>
                     <div class="row">
                         <div class="col">
                             <div class="card shadow mb-3">
                                 <div class="card-header py-3">
-                                    <p class="text-primary m-0 fw-bold">Add Worker</p>
+                                    <p class="text-primary m-0 fw-bold">Add Staff</p>
                                 </div>
                                 <div class="card-body">
                                     <form action="add_worker.php" method="post" enctype="multipart/form-data">
@@ -250,25 +219,25 @@ $conn->close();
                                             </div>
                                         </div>
                                         <div class="row">
-                                            <div class="col">
+                                            <!--<div class="col">
                                                 <div class="mb-3"><label class="form-label" for="unit_id"><strong>Unit ID</strong></label>
                                                     <select class="form-select" id="unit_id" name="unit_id" required>
                                                         <?php echo $unitOptions; ?>
                                                     </select>
                                                 </div>
-                                            </div>
+                                            </div>-->
                                             <div class="col">
                                                 <div class="mb-3"><label class="form-label" for="emergency_contact"><strong>Emergency Contact</strong></label><input class="form-control" type="text" id="emergency_contact" name="emergency_contact" placeholder="Emergency Contact" required></div>
                                             </div>
                                         </div>
-                                        <!--<div class="row">
+                                        <div class="row">
                                             <div class="col">
                                                 <div class="mb-3"><label class="form-label" for="profile_pic"><strong>Profile Picture</strong></label>
                                                 <input class="form-control" type="file" name="profile_pic" id="profile_pic" accept="image/*"></div>
                                             </div>
-                                        </div> -->
+                                        </div> 
                                         <div class="mb-3">
-                                            <input class="btn btn-primary btn-sm" type="submit" value="Add Worker">
+                                            <input class="btn btn-primary btn-sm" type="submit" value="Add Staff">
                                         </div>
                                     </form>
                                 </div>

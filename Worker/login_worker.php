@@ -22,7 +22,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         header("Location: dashboard_worker.php");
         exit();
     } else {
-        $error_message = "Invalid username or password.";
+        echo '<script>alert("Wrong Username or Password!");</script>';
+        echo '<script>window.location.href = "login_worker.php";</script>';
     }
 }
 
@@ -41,7 +42,7 @@ $conn->close();
     <link rel="stylesheet" href="../assets/css/Lightbox-Gallery-baguetteBox.min.css">
 </head>
 
-<body class="bg-gradient-primary" style="position: sticky;overflow: visible;transform: translateY(176px);">
+<body class="bg-gradient-primary d-flex align-items-center justify-content-center min-vh-100">
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-9 col-lg-12 col-xl-10">
