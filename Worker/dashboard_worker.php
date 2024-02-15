@@ -57,7 +57,7 @@ $unitCount = getCount('unit', $conn);
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    <title>Dashboard - Worker</title>
+    <title>Staff - Dashboard</title>
     <link rel="stylesheet" href="../assets/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i&amp;display=swap">
     <link rel="stylesheet" href="../assets/fonts/fontawesome-all.min.css">
@@ -224,14 +224,8 @@ $unitCount = getCount('unit', $conn);
                     <div class="row">
                         <div class="col-lg-5 col-xl-4">
                             <div class="card shadow mb-4">
-                                <div class="card-header d-flex justify-content-between align-items-center">
+                                <div class="card-header d-flex justify-content-between align-items-center" style="padding-top:12px;">
                                     <h6 class="text-primary fw-bold m-0">Maintenance Task</h6>
-                                    <div class="dropdown no-arrow"><button class="btn btn-link btn-sm dropdown-toggle" aria-expanded="false" data-bs-toggle="dropdown" type="button"><i class="fas fa-ellipsis-v text-gray-400"></i></button>
-                                        <div class="dropdown-menu shadow dropdown-menu-end animated--fade-in">
-                                            <p class="text-center dropdown-header">dropdown header:</p><a class="dropdown-item" href="#">&nbsp;Action</a><a class="dropdown-item" href="#">&nbsp;Another action</a>
-                                            <div class="dropdown-divider"></div><a class="dropdown-item" href="#">&nbsp;Something else here</a>
-                                        </div>
-                                    </div>
                                 </div>
                                 <div class="card-body">
                                     <div class="chart-area"><canvas data-bss-chart="{&quot;type&quot;:&quot;pie&quot;,&quot;data&quot;:{&quot;labels&quot;:[&quot;In Progress&quot;,&quot;Pending&quot;,&quot;Completed&quot;],&quot;datasets&quot;:[{&quot;label&quot;:&quot;&quot;,&quot;backgroundColor&quot;:[&quot;#FFC436&quot;,&quot;#C70039 &quot;,&quot;#1cc88a&quot;],&quot;borderColor&quot;:[&quot;#ffffff&quot;,&quot;#ffffff&quot;,&quot;#ffffff&quot;],&quot;data&quot;:[&quot;<?php echo $maintenanceInProgressCount; ?>&quot;,&quot;<?php echo $maintenancePendingCount; ?>&quot;,&quot;<?php echo $maintenanceCompletedCount; ?>&quot;]}]},&quot;options&quot;:{&quot;maintainAspectRatio&quot;:false,&quot;legend&quot;:{&quot;display&quot;:false,&quot;labels&quot;:{&quot;fontStyle&quot;:&quot;normal&quot;}},&quot;title&quot;:{&quot;fontStyle&quot;:&quot;normal&quot;}}}"></canvas></div>
