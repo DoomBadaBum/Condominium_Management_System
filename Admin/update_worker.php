@@ -77,7 +77,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                           WHERE user_id = $userId";
 
     if ($conn->query($updateResidentSql) === TRUE) {
-        echo '<script>alert("Resident updated successfully!");</script>';
+        echo '<script>alert("Staff updated successfully!");</script>';
         echo '<script>window.location.href = "view_worker.php?user_id=' . $userId . '";</script>';
         exit();
     } else {
