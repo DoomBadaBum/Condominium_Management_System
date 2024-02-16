@@ -31,7 +31,7 @@ if ($result->num_rows == 1) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $workerId = $_SESSION["user_id"];
     $title = $_POST["title"];
-    $content = nl2br($_POST["content"]);
+    $content = $_POST["content"];
     $time = date("H:i:s"); // Current time
     $date = date("Y-m-d"); // Current date
 

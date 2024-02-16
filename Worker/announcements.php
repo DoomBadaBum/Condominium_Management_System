@@ -159,7 +159,7 @@ $conn->close();
                                         </div>
                                         <h4 style="color : black; margin-top: 30px; margin-left: 30px;" class="card-title" style="padding-top: 29px;"><strong><?php echo $row['title']; ?></strong></h4>
                                         <h6 style="color : black; margin-left: 30px;" class="card-subtitle mb-2" >Date: <?php echo $row['formatted_date']; ?> at <?php echo $row['formatted_time']; ?></h6>
-                                        <p class="card-text"><p style="color : black; margin-left: 30px;" ><?php echo $row['content']; ?></p></p>
+                                        <p class="card-text"><p style="color : black; margin-left: 30px;" ><?php echo nl2br($row['content']); ?></p></p>
                                         <!-- Add a "Delete" link with confirmation -->
                                         <a class="btn btn-warning" style="margin-left: 30px;" href="edit_announcement.php?announcement_id=<?php echo $row['announcement_id']; ?>">Update</a>
                                         <a class="btn btn-danger" href="delete_announcement.php?announcement_id=<?php echo $row['announcement_id']; ?>" onclick="return confirm('Are you sure you want to delete this announcement? (Yes/No)')">Delete</a>
