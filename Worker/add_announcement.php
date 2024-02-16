@@ -11,8 +11,11 @@ if (!isset($_SESSION["user_id"])) {
 }
 
 $userId = $_SESSION["user_id"];
-$sql = "SELECT * FROM user WHERE user_id = $userId";
-$result = $conn->query($sql);
+$sql = "SELECT * FROM user WHERE user_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $userId);
+$stmt->execute();
+$result = $stmt->get_result();
 
 if ($result === false) {
     die("Error executing user query: " . $conn->error);
@@ -28,7 +31,7 @@ if ($result->num_rows == 1) {
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $workerId = $_SESSION["user_id"];
     $title = $_POST["title"];
-    $content = $_POST["content"];
+    $content = nl2br($_POST["content"]);
     $time = date("H:i:s"); // Current time
     $date = date("Y-m-d"); // Current date
 
@@ -37,6 +40,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     // Check if a file was uploaded
     echo "Upload Error Code: " . $mediaFile['error']; // Debugging statement
+
+    $mediaUrl = null; // Initialize mediaUrl
 
     if ($mediaFile['error'] == 0) {
         // Generate a unique filename to avoid overwriting existing files
@@ -48,34 +53,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Store the file reference (e.g., file path or URL) in the database
         $mediaUrl = 'media_uploads/' . $uniqueFilename;
-
-        // Insert announcement with media URL into the database
-        $insertAnnouncementSql = "INSERT INTO announcement (worker_id, title, content, date, time, media_url)
-                                  VALUES ($workerId, '$title', '$content', '$date', '$time','$mediaUrl')";
-
-        if ($conn->query($insertAnnouncementSql) === TRUE) {
-            echo '<script>alert("Announcement created successfully!");</script>';
-            echo '<script>window.location.href = "announcements.php";</script>';
-            exit(); // Add this line to prevent further execution
-        } else {
-            // Display the SQL error
-            echo "Error: " . $insertAnnouncementSql . "<br>" . $conn->error;
-        }
-    } else {
-        // Handle the case where no file was uploaded
-        // Insert announcement without media URL into the database
-        $insertAnnouncementSql = "INSERT INTO announcement (worker_id, title, content, date, time)
-                                  VALUES ($workerId, '$title', '$content', '$date', '$time')";
-
-        if ($conn->query($insertAnnouncementSql) === TRUE) {
-            echo '<script>alert("Announcement created successfully!");</script>';
-            echo '<script>window.location.href = "announcements.php";</script>';
-            exit(); // Add this line to prevent further execution
-        } else {
-            // Display the SQL error
-            echo "Error: " . $insertAnnouncementSql . "<br>" . $conn->error;
-        }
     }
+
+    // Insert announcement with media URL into the database
+    $insertAnnouncementSql = "INSERT INTO announcement (worker_id, title, content, date, time, media_url)
+                              VALUES (?, ?, ?, ?, ?, ?)";
+
+    // Use prepared statement to prevent SQL injection
+    $stmt = $conn->prepare($insertAnnouncementSql);
+    $stmt->bind_param("isssss", $workerId, $title, $content, $date, $time, $mediaUrl);
+
+    // Execute the prepared statement
+    if ($stmt->execute()) {
+        echo '<script>alert("Announcement created successfully!");</script>';
+        echo '<script>window.location.href = "announcements.php";</script>';
+        exit(); // Add this line to prevent further execution
+    } else {
+        // Display the SQL error
+        echo "Error: " . $stmt->error;
+    }
+
+    // Close the prepared statement
+    $stmt->close();
 }
 
 $conn->close();
