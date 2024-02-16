@@ -19,8 +19,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $date = date("Y-m-d"); // Current date
 
     // Fetch the current media URL from the database
-    $fetchMediaUrlSql = "SELECT media_url FROM announcement WHERE announcement_id = $announcementId AND worker_id = $workerId";
-    $result = $conn->query($fetchMediaUrlSql);
+    $fetchMediaUrlSql = "SELECT media_url FROM announcement WHERE announcement_id = ? AND worker_id = ?";
+    $stmtFetchMediaUrl = $conn->prepare($fetchMediaUrlSql);
+    $stmtFetchMediaUrl->bind_param("ii", $announcementId, $workerId);
+    $stmtFetchMediaUrl->execute();
+    $result = $stmtFetchMediaUrl->get_result();
 
     if ($result->num_rows == 1) {
         $row = $result->fetch_assoc();
@@ -37,22 +40,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
 
             // Set the media URL in the database to NULL
-            $updateMediaSql = "UPDATE announcement 
-                               SET media_url = NULL 
-                               WHERE announcement_id = $announcementId AND worker_id = $workerId";
+            $updateMediaSql = "UPDATE announcement SET media_url = NULL WHERE announcement_id = ? AND worker_id = ?";
+            $stmtUpdateMedia = $conn->prepare($updateMediaSql);
+            $stmtUpdateMedia->bind_param("ii", $announcementId, $workerId);
 
-            if ($conn->query($updateMediaSql) === TRUE) {
+            if ($stmtUpdateMedia->execute()) {
                 // Media removal successful, provide feedback and redirect
                 echo '<script>alert("Media removed successfully!");</script>';
                 echo '<script>window.location.href = "announcements.php";</script>';
                 exit();
             } else {
                 // Display the SQL error
-                echo "Error: " . $updateMediaSql . "<br>" . $conn->error;
+                echo "Error: " . $stmtUpdateMedia->error;
                 exit();
             }
         }
     }
+
     // Handle file upload
     $mediaFile = $_FILES['media'];
 
@@ -70,24 +74,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Update announcement with new media URL
         $updateAnnouncementSql = "UPDATE announcement 
-                                  SET title = '$title', content = '$content', date = '$date', time = '$time', media_url = '$mediaUrl'
-                                  WHERE announcement_id = $announcementId AND worker_id = $workerId";
+                                  SET title = ?, content = ?, date = ?, time = ?, media_url = ?
+                                  WHERE announcement_id = ? AND worker_id = ?";
+        $stmtUpdateAnnouncement = $conn->prepare($updateAnnouncementSql);
+        $stmtUpdateAnnouncement->bind_param("ssssssi", $title, $content, $date, $time, $mediaUrl, $announcementId, $workerId);
     } else {
         // Update announcement without changing media URL
         $updateAnnouncementSql = "UPDATE announcement 
-                                  SET title = '$title', content = '$content', date = '$date', time = '$time'
-                                  WHERE announcement_id = $announcementId AND worker_id = $workerId";
+                                  SET title = ?, content = ?, date = ?, time = ?
+                                  WHERE announcement_id = ? AND worker_id = ?";
+        $stmtUpdateAnnouncement = $conn->prepare($updateAnnouncementSql);
+        $stmtUpdateAnnouncement->bind_param("ssssii", $title, $content, $date, $time, $announcementId, $workerId);
     }
 
-    if ($conn->query($updateAnnouncementSql) === TRUE) {
+    if ($stmtUpdateAnnouncement->execute()) {
         // Update successful, redirect to announcements page
         echo '<script>alert("Announcement updated successfully!");</script>';
         echo '<script>window.location.href = "announcements.php";</script>';
         exit();
     } else {
         // Display the SQL error
-        echo "Error: " . $updateAnnouncementSql . "<br>" . $conn->error;
+        echo "Error: " . $stmtUpdateAnnouncement->error;
     }
+
+    // Close prepared statements
+    $stmtFetchMediaUrl->close();
+    $stmtUpdateAnnouncement->close();
 } else {
     // Invalid request method, redirect to announcements page
     echo '<script>alert("Announcement failed to update!");</script>';
@@ -95,5 +107,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     exit();
 }
 
+// Close the database connection
 $conn->close();
 ?>
