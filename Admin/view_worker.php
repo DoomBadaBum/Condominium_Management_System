@@ -192,7 +192,7 @@ $conn->close();
                     </div>
                 </div>
                 <?php else: ?>
-                    <p>No residents available.</p>
+                    <p>No staffs available.</p>
                 <?php endif; ?>
             </div>
         </div><a class="border rounded d-inline scroll-to-top" href="#page-top"><i class="fas fa-angle-up"></i></a>
