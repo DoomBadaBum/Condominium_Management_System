@@ -18,6 +18,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $time = date("H:i:s"); // Current time
     $date = date("Y-m-d"); // Current date
 
+    // Fetch the current media URL from the database
+    $fetchMediaUrlSql = "SELECT media_url FROM announcement WHERE announcement_id = $announcementId AND worker_id = $workerId";
+    $result = $conn->query($fetchMediaUrlSql);
+
+    if ($result->num_rows == 1) {
+        $row = $result->fetch_assoc();
+        $mediaUrl = $row['media_url'];
+
+        // Check if the "Remove Media" button is clicked
+        if (isset($_POST["remove_media"])) {
+            // Remove the media file from the server
+            if (!empty($mediaUrl)) {
+                $mediaFilePath = '../' . $mediaUrl;
+                if (file_exists($mediaFilePath)) {
+                    unlink($mediaFilePath);
+                }
+            }
+
+            // Set the media URL in the database to NULL
+            $updateMediaSql = "UPDATE announcement 
+                               SET media_url = NULL 
+                               WHERE announcement_id = $announcementId AND worker_id = $workerId";
+
+            if ($conn->query($updateMediaSql) === TRUE) {
+                // Media removal successful, provide feedback and redirect
+                echo '<script>alert("Media removed successfully!");</script>';
+                echo '<script>window.location.href = "announcements.php";</script>';
+                exit();
+            } else {
+                // Display the SQL error
+                echo "Error: " . $updateMediaSql . "<br>" . $conn->error;
+                exit();
+            }
+        }
+    }
     // Handle file upload
     $mediaFile = $_FILES['media'];
 

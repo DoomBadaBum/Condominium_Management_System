@@ -130,11 +130,15 @@
                                         <div class="mb-3"><label class="form-label" for="content"><strong>Content</strong></label><textarea class="form-control" id="content" name="content" required><?php echo $content; ?></textarea></div>
                                     </div>
                                 </div>
+                                <!-- Add this button within the form -->
                                 <div class="row">
                                     <div class="col">
-                                        <div class="mb-3"><label class="form-label" for="media"><strong>Attach Media</strong></label><input class="form-control" type="file" id="media" name="media">
+                                        <div class="mb-3">
+                                            <label class="form-label" for="media"><strong>Attach Media</strong></label>
+                                            <input class="form-control" type="file" id="media" name="media">
                                             <?php if (!empty($mediaUrl)): ?>
                                                 <p>Current Media: <a href="../<?php echo $mediaUrl; ?>" target="_blank"><?php echo $mediaUrl; ?></a></p>
+                                                <button type="submit" class="btn btn-danger btn-sm" name="remove_media">Remove Media</button>
                                             <?php endif; ?><br>
                                         </div>
                                     </div>
